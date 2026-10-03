@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="fw-bold">My volunteer profile</h1>
+            <p class="text-muted">Select only skills, hobbies, and days that are true for you. You may choose multiple days.</p>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="text-center mb-4">
+                            {% if profile and profile.photo_filename %}
+                                <img class="profile-photo" src="{{ url_for('static', filename=profile.photo_filename if 'uploads/' in profile.photo_filename else 'uploads/' + profile.photo_filename) }}" alt="Your profile photo">
+                            {% else %}
+                                <div class="profile-photo placeholder-avatar">{{ user.name[0] }}</div>
+                            {% endif %}
+                            <label class="form-label d-block mt-2">Profile image</label>
+                            <input class="form-control" type="file" name="photo" accept="image/png,image/jpeg,image/gif,image/webp">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Full name</label>
+                                <input class="form-control mb-3" name="name" value="{{ user.name }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date of birth</label>
+                                <input class="form-control mb-3" type="date" name="date_of_birth" value="{{ user.date_of_birth or '' }}" required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <label class="form-label fw-bold">Skills *</label>
+                            <button class="btn btn-sm btn-link" type="button" data-clear-group="skills">Clear skills</button>
+                        </div>
+                        <div class="check-grid mb-3">
+                            {% for skill in skills %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="skills" value="{{ skill.name }}" id="skill{{ loop.index }}" {% if skill.name|lower in selected_skills %}checked{% endif %}>
+                                    <label class="form-check-label" for="skill{{ loop.index }}">{{ skill.name }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <label class="form-label fw-bold">Hobbies and interests</label>
+                            <button class="btn btn-sm btn-link" type="button" data-clear-group="interests">Clear hobbies</button>
+                        </div>
+                        <div class="check-grid mb-3">
+                            {% for interest in interests %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="interests" value="{{ interest.name }}" id="interest{{ loop.index }}" {% if interest.name|lower in selected_interests %}checked{% endif %}>
+                                    <label class="form-check-label" for="interest{{ loop.index }}">{{ interest.name }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <label class="form-label fw-bold">Days you are free *</label>
+                            <button class="btn btn-sm btn-link" type="button" data-clear-group="availability">Clear days</button>
+                        </div>
+                        <div class="check-grid mb-3">
+                            {% for day in days %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="availability" value="{{ day }}" id="day{{ loop.index }}" {% if day|lower in selected_days %}checked{% endif %}>
+                                    <label class="form-check-label" for="day{{ loop.index }}">{{ day }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <label class="form-label">District only</label>
+                        <input class="form-control mb-3" name="location" value="{{ profile.location if profile else '' }}" required>
+                        <button class="btn btn-success">Update profile and recheck tasks</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="alert alert-success mt-4 mt-lg-0">
+                <b>How qualification works</b>
+                <p class="mb-0">All required task skills must be selected and at least one of your free days must match. Jaccard similarity remains visible as the comparison score.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
