@@ -1,1 +1,399 @@
-{% extends 'base.html' %}{% block content %}<div class="container py-5"><h1 class="fw-bold">Organization dashboard</h1><p class="text-muted">Post opportunities and manage applicants for your organization.</p><div class="row g-4 my-2"><div class="col-md-6"><div class="card border-0 shadow-sm text-center p-3"><div class="display-6 text-success fw-bold">{{counts.tasks}}</div><span>My posted tasks</span></div></div><div class="col-md-6"><div class="card border-0 shadow-sm text-center p-3"><div class="display-6 text-success fw-bold">{{counts.applications}}</div><span>Applications received</span></div></div></div><div class="d-flex flex-wrap gap-2"><a class="btn btn-success" href="{{url_for('organization_profile')}}">Organization profile</a><a class="btn btn-outline-success" href="{{url_for('manage_tasks')}}">Post / manage my tasks</a><a class="btn btn-outline-success" href="{{url_for('manage_applications')}}">Review my applications</a></div></div>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div>
+      <h1 class="fw-bold mb-1">Organization Dashboard</h1>
+      <p class="text-muted mb-0">Manage your posted volunteer opportunities, review applicants & past reviews, and explore other community works.</p>
+    </div>
+    <a class="btn btn-success" href="{{ url_for('manage_tasks') }}">
+      <i class="bi bi-plus-circle me-1"></i>Post New Work
+    </a>
+  </div>
+
+  <!-- Stats Overview -->
+  <div class="row g-4 my-3">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <div class="display-6 text-success fw-bold">{{ counts.my_tasks }}</div>
+        <span class="fw-semibold">My Posted Works</span>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <div class="display-6 text-success fw-bold">{{ counts.applications }}</div>
+        <span class="fw-semibold">Volunteer Applications Received</span>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <div class="display-6 text-primary fw-bold">{{ counts.other_tasks }}</div>
+        <span class="fw-semibold">Other Organizations' Works</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a class="btn btn-success" href="{{ url_for('organization_profile') }}">
+      <i class="bi bi-building-gear me-1"></i>Organization Profile
+    </a>
+    <a class="btn btn-outline-success" href="{{ url_for('manage_tasks') }}">
+      <i class="bi bi-journal-plus me-1"></i>Post / Manage My Tasks
+    </a>
+    <a class="btn btn-outline-success" href="{{ url_for('manage_applications') }}">
+      <i class="bi bi-clipboard-check me-1"></i>Review All Applications
+    </a>
+  </div>
+
+  <!-- Navigation Tabs for Separated Panels -->
+  <ul class="nav nav-tabs nav-fill mb-4 border-bottom" id="orgTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-bold py-3 fs-6 text-success" id="my-tasks-tab" data-bs-toggle="tab" data-bs-target="#my-tasks-panel" type="button" role="tab">
+        <i class="bi bi-house-door me-2"></i>My Organization's Posted Tasks ({{ counts.my_tasks }})
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold py-3 fs-6 text-primary" id="other-tasks-tab" data-bs-toggle="tab" data-bs-target="#other-tasks-panel" type="button" role="tab">
+        <i class="bi bi-buildings me-2"></i>Other Organizations' Tasks ({{ counts.other_tasks }})
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="orgTabsContent">
+    
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- PANEL 1: MY ORGANIZATION'S POSTED TASKS & APPLICANTS -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div class="tab-pane fade show active" id="my-tasks-panel" role="tabpanel">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-journal-check text-success me-2"></i>Works Created by My Organization</h2>
+        <a href="{{ url_for('manage_tasks') }}" class="btn btn-sm btn-outline-success"><i class="bi bi-pencil-square me-1"></i>Manage / Add Works</a>
+      </div>
+
+      <div class="row g-4">
+        {% for task in my_tasks %}
+        <div class="col-md-6 col-lg-4">
+          <article class="card task-card h-100 border-0 shadow-sm overflow-hidden d-flex flex-column">
+            <img class="task-image" src="{{ url_for('static', filename=task.image_filename or 'images/tasks/cleanup.svg') }}" alt="{{ task.title }}" style="height: 180px; object-fit: cover;" />
+            <div class="card-body flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                <span class="badge bg-success"><i class="bi bi-geo-alt me-1"></i>{{ task.location }}</span>
+                <span class="badge bg-success-subtle text-success border border-success">
+                  <i class="bi bi-people me-1"></i>{{ task.application_count }} Applicant{{ '' if task.application_count == 1 else 's' }}
+                </span>
+              </div>
+              <h3 class="h5 fw-bold mt-2">{{ task.title }}</h3>
+              <p class="text-muted small mb-3">{{ task.description }}</p>
+              <div class="small text-muted mb-2"><b>Dates:</b> {{ task.start_date or 'TBA' }} to {{ task.end_date or 'TBA' }}</div>
+              <div class="small text-muted mb-2"><b>Required Skills:</b> {{ task.required_skills }}</div>
+              <div class="small text-muted mb-3"><b>Days:</b> {{ task.availability }}</div>
+
+              <!-- Applicants List for This Specific Task -->
+              {% set task_apps = [] %}
+              {% for app_item in my_applications if app_item.app.task_id == task.id %}
+                {% set _ = task_apps.append(app_item) %}
+              {% endfor %}
+
+              {% if task_apps %}
+              <div class="p-2 rounded bg-light border mt-2">
+                <small class="fw-bold d-block mb-1 text-dark"><i class="bi bi-person-lines-fill text-success me-1"></i>Applied Volunteers ({{ task_apps|length }}):</small>
+                {% for item in task_apps %}
+                {% set app = item.app %}
+                {% set reviews = item.reviews %}
+                <div class="border-bottom py-2 small">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="d-flex align-items-center gap-2 cursor-pointer" data-bs-toggle="modal" data-bs-target="#viewVolModalOrg{{ app.id }}" style="cursor: pointer;" title="Click to view volunteer profile & past reviews">
+                      {% if app.photo_filename %}
+                        <img src="{{ url_for('static', filename=app.photo_filename if app.photo_filename.startswith('uploads/') else 'uploads/' + app.photo_filename) }}" alt="{{ app.volunteer_name }}" class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;">
+                      {% else %}
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                          {{ app.volunteer_name[0]|upper }}
+                        </div>
+                      {% endif %}
+                      <div>
+                        <strong class="text-dark me-1 text-decoration-underline-hover">{{ app.volunteer_name }}</strong>
+                        {% if app.age %}<small class="text-muted me-1">({{ app.age }} yrs)</small>{% endif %}
+                        <span class="badge bg-success-subtle text-success border border-success">{{ '%.2f'|format(app.score*100) }}%</span>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-info py-0 px-1" data-bs-toggle="modal" data-bs-target="#viewVolModalOrg{{ app.id }}" title="View past reviews">
+                      <i class="bi bi-star-fill text-warning me-1"></i>Reviews ({{ reviews|length }})
+                    </button>
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted" style="font-size:0.75rem;">Status: <b>{{ app.status }}</b></span>
+                    <div>
+                      {% if app.status == 'Pending' %}
+                        <form class="d-inline" method="post" action="{{ url_for('update_application', application_id=app.id, decision='Accepted') }}">
+                          <button class="btn btn-sm btn-success px-2 py-0" title="Approve volunteer">Approve</button>
+                        </form>
+                        <form class="d-inline" method="post" action="{{ url_for('update_application', application_id=app.id, decision='Rejected') }}">
+                          <button class="btn btn-sm btn-outline-danger px-2 py-0" title="Reject volunteer">Reject</button>
+                        </form>
+                      {% elif app.status == 'Accepted' %}
+                        <button type="button" class="btn btn-sm btn-primary px-2 py-0" data-bs-toggle="modal" data-bs-target="#completeModalOrg{{ app.id }}">
+                          <i class="bi bi-award me-1"></i>Mark Completed
+                        </button>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="card-footer bg-white border-0 pt-0 pb-3">
+              <a class="btn btn-outline-success btn-sm w-100 fw-semibold" href="{{ url_for('edit_task', task_id=task.id) }}">
+                <i class="bi bi-pencil me-1"></i>Edit Work Details & Image
+              </a>
+            </div>
+          </article>
+        </div>
+        {% else %}
+        <div class="col-12">
+          <div class="alert alert-success border text-center py-4">
+            <i class="bi bi-plus-circle display-6 d-block mb-2 text-success"></i>
+            <h5 class="fw-bold">No tasks posted yet</h5>
+            <p class="mb-3">Your organization has not posted any volunteer opportunities yet.</p>
+            <a href="{{ url_for('manage_tasks') }}" class="btn btn-success"><i class="bi bi-plus-lg me-1"></i>Post Your First Work</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- PANEL 2: OTHER ORGANIZATIONS' TASKS (SEPARATE PANEL) -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div class="tab-pane fade" id="other-tasks-panel" role="tabpanel">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-buildings text-primary me-2"></i>Works Posted by Other Organizations</h2>
+        <span class="badge bg-primary fs-6">{{ counts.other_tasks }} total works</span>
+      </div>
+
+      <div class="row g-4">
+        {% for task in other_tasks %}
+        <div class="col-md-6 col-lg-4">
+          <article class="card task-card h-100 border-0 shadow-sm overflow-hidden d-flex flex-column">
+            <img class="task-image" src="{{ url_for('static', filename=task.image_filename or 'images/tasks/cleanup.svg') }}" alt="{{ task.title }}" style="height: 180px; object-fit: cover;" />
+            <div class="card-body flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                <span class="badge bg-secondary"><i class="bi bi-geo-alt me-1"></i>{{ task.location }}</span>
+                <span class="small text-muted"><i class="bi bi-calendar-week me-1"></i>{{ task.availability }}</span>
+              </div>
+              
+              <div class="mb-2">
+                <span class="badge bg-light text-dark border"><i class="bi bi-building me-1 text-primary"></i>Posted by: <b>{{ task.organization_name }}</b></span>
+              </div>
+
+              <h3 class="h5 fw-bold mt-2">{{ task.title }}</h3>
+              <p class="text-muted small mb-3">{{ task.description }}</p>
+              <div class="small text-muted mb-2"><b>Dates:</b> {{ task.start_date or 'TBA' }} to {{ task.end_date or 'TBA' }}</div>
+              <div class="small text-muted mb-2"><b>Required Skills:</b> {{ task.required_skills }}</div>
+            </div>
+            <div class="card-footer bg-white border-0 pt-0 pb-3">
+              <span class="badge bg-light text-secondary border d-block py-2">
+                <i class="bi bi-info-circle me-1"></i>External Organization Work
+              </span>
+            </div>
+          </article>
+        </div>
+        {% else %}
+        <div class="col-12">
+          <div class="alert alert-info text-center py-4">
+            No other organization works found in the system.
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ALL MODALS PLACED CLEANLY OUTSIDE CARDS -->
+{% for item in my_applications %}
+{% set app = item.app %}
+{% set reviews = item.reviews %}
+
+<!-- Modal 1: View Volunteer Profile & Past Reviews -->
+<div class="modal fade" id="viewVolModalOrg{{ app.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow text-start">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold"><i class="bi bi-person-badge text-success me-2"></i>Volunteer Profile & Past Reviews</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+
+        <!-- Profile Header with Image & Calculated Age -->
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+          {% if app.photo_filename %}
+            <img src="{{ url_for('static', filename=app.photo_filename if app.photo_filename.startswith('uploads/') else 'uploads/' + app.photo_filename) }}" alt="{{ app.volunteer_name }}" class="rounded-circle border shadow" style="width: 72px; height: 72px; object-fit: cover;">
+          {% else %}
+            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold shadow" style="width: 72px; height: 72px; font-size: 2rem;">
+              {{ app.volunteer_name[0]|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <h4 class="fw-bold text-dark mb-1">{{ app.volunteer_name }}</h4>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge bg-primary-subtle text-primary border border-primary">
+                <i class="bi bi-person-fill me-1"></i>Volunteer
+              </span>
+              <span class="badge bg-primary-subtle text-primary border border-primary">
+                <i class="bi bi-mortarboard me-1"></i>{{ app.education_level or 'Not specified' }}
+              </span>
+              {% if app.age %}
+                <span class="badge bg-info-subtle text-info border border-info">
+                  <i class="bi bi-calendar-event me-1"></i>Age: {{ app.age }} Years Old
+                </span>
+              {% endif %}
+              {% if app.location %}
+                <span class="badge bg-success-subtle text-success border border-success">
+                  <i class="bi bi-geo-alt me-1"></i>{{ app.location }}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-2">
+            <small class="text-muted d-block">Full Name:</small>
+            <strong class="text-dark fs-6">{{ app.volunteer_name }}</strong>
+          </div>
+          <div class="col-md-6 mb-2">
+            <small class="text-muted d-block">Email Address:</small>
+            <strong class="text-dark fs-6">{{ app.volunteer_email }}</strong>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-2">
+            <small class="text-muted d-block">Date of Birth & Age:</small>
+            <strong class="text-dark fs-6">
+              {% if app.date_of_birth %}
+                {{ app.date_of_birth }} {% if app.age %}(<span class="text-primary">{{ app.age }} years old</span>){% endif %}
+              {% else %}
+                Not registered
+              {% endif %}
+            </strong>
+          </div>
+          <div class="col-md-6 mb-2">
+            <small class="text-muted d-block">Education / Qualification Level:</small>
+            <span class="badge bg-primary-subtle text-primary border border-primary"><i class="bi bi-mortarboard me-1"></i>{{ app.education_level or 'Not specified' }}</span>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-3">
+            <small class="text-muted d-block mb-1">Free Days Available:</small>
+            <div class="d-flex flex-wrap gap-1">
+              {% if app.availability %}
+                {% for day in app.availability.split(',') %}
+                  <span class="badge bg-light text-dark border fw-normal">{{ day.strip() }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted small">Not specified</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <small class="text-muted d-block mb-1">Interests:</small>
+            <div class="d-flex flex-wrap gap-1">
+              {% if app.interests %}
+                {% for interest in app.interests.split(',') %}
+                  <span class="badge bg-light text-dark border fw-normal">{{ interest.strip() }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted small">Not specified</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <small class="text-muted d-block mb-1">Skills:</small>
+          <div class="d-flex flex-wrap gap-1">
+            {% if app.skills %}
+              {% for skill in app.skills.split(',') %}
+                <span class="badge bg-success-subtle text-success border border-success fw-normal">{{ skill.strip() }}</span>
+              {% endfor %}
+            {% else %}
+              <span class="text-muted small">No skills listed</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <hr />
+
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-chat-left-quote text-success me-2"></i>Past Performance & Behavior Reviews by Organizations ({{ reviews|length }})</h6>
+        {% if reviews %}
+          <div class="list-group list-group-flush">
+            {% for r in reviews %}
+            <div class="list-group-item px-0 py-3 border-bottom">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong class="text-dark"><i class="bi bi-building me-1 text-primary"></i>{{ r.organization_name }}</strong>
+                <span class="badge bg-warning text-dark">
+                  {% for i in range(r.rating or 5) %}★{% endfor %} ({{ r.rating or 5 }}/5 Stars)
+                </span>
+              </div>
+              <small class="text-muted d-block mb-2">Work Task: {{ r.task_title }}</small>
+              <div class="p-3 bg-light rounded text-dark fst-italic">"{{ r.review_text }}"</div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="alert alert-light border text-center text-muted my-2">
+            <i class="bi bi-info-circle me-1"></i>No previous reviews from other organizations yet. This is a new volunteer.
+          </div>
+        {% endif %}
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Mark Completed & Write Review -->
+<div class="modal fade" id="completeModalOrg{{ app.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered text-start">
+    <div class="modal-content border-0 shadow">
+      <form method="post" action="{{ url_for('update_application', application_id=app.id, decision='Completed') }}">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-award me-2"></i>Mark Work Completed & Submit Review</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="small text-muted mb-3">Please rate and write a short review regarding <strong>{{ app.volunteer_name }}</strong>'s performance, behavior, and work quality.</p>
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Behavior & Work Rating</label>
+            <select class="form-select" name="rating" required>
+              <option value="5" selected>⭐⭐⭐⭐⭐ 5 Stars - Excellent Behavior & Work</option>
+              <option value="4">⭐⭐⭐⭐ 4 Stars - Very Good</option>
+              <option value="3">⭐⭐⭐ 3 Stars - Good / Satisfactory</option>
+              <option value="2">⭐⭐ 2 Stars - Needs Improvement</option>
+              <option value="1">⭐ 1 Star - Poor Behavior</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Volunteer Performance Review & Behavior Feedback</label>
+            <textarea class="form-control" name="review_text" rows="4" placeholder="Write feedback regarding their behavior, punctuality, teamwork, and overall work..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success"><i class="bi bi-check-circle me-1"></i>Submit Review & Mark Completed</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

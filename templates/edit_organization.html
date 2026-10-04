@@ -1,1 +1,110 @@
-{% extends 'base.html' %}{% block content %}<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-8"><h1 class="fw-bold">Edit organization</h1><div class="card border-0 shadow-sm"><div class="card-body p-4"><form method="post"><div class="row"><div class="col-md-6"><label class="form-label">Organization name</label><input class="form-control mb-3" name="organization_name" value="{{organization.organization_name}}"></div><div class="col-md-6"><label class="form-label">Contact person</label><input class="form-control mb-3" name="contact_person" value="{{organization.contact_person}}"></div></div><div class="row"><div class="col-md-6"><label class="form-label">Email</label><input class="form-control mb-3" type="email" name="email" value="{{organization.email}}"></div><div class="col-md-6"><label class="form-label">Phone</label><input class="form-control mb-3" name="phone" value="{{organization.phone}}"></div></div><label class="form-label">Location</label><input class="form-control mb-3" name="location" value="{{organization.location}}"><label class="form-label">Description</label><textarea class="form-control mb-3" name="description" rows="4">{{organization.description}}</textarea><button class="btn btn-success">Save organization</button><a class="btn btn-link" href="{{url_for('manage_organizations')}}">Cancel</a></form></div></div></div></div></div>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="fw-bold mb-0">Edit Organization</h1>
+        <a href="{{ url_for('manage_organizations') }}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left me-1"></i>Back to Organizations List
+        </a>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data">
+
+            <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+              {% if organization and organization.logo_filename %}
+                <img src="{{ url_for('static', filename=organization.logo_filename if organization.logo_filename.startswith('uploads/') else 'uploads/' + organization.logo_filename) }}" alt="Organization Logo" class="rounded border shadow-sm" style="width: 64px; height: 64px; object-fit: cover;" />
+              {% else %}
+                <div class="rounded bg-success text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 64px; height: 64px; font-size: 1.8rem;">
+                  {{ (organization.organization_name or 'O')[0]|upper }}
+                </div>
+              {% endif %}
+              <div>
+                <h4 class="fw-bold mb-0 text-dark">{{ organization.organization_name }}</h4>
+                <small class="text-muted">{{ organization.email }}</small>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Organization Name</label>
+                <input class="form-control" name="organization_name" value="{{ organization.organization_name }}" required />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Organization Type / Classification</label>
+                <select class="form-select" name="organization_type" required>
+                  {% for opt in ORGANIZATION_TYPE_OPTIONS %}
+                    <option value="{{ opt }}" {% if organization.organization_type == opt %}selected{% endif %}>{{ opt }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Contact Person</label>
+                <input class="form-control" name="contact_person" value="{{ organization.contact_person }}" required />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Username</label>
+                <input class="form-control" name="username" value="{{ organization.username }}" pattern="[A-Za-z0-9_]+" required />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Account Email</label>
+                <input class="form-control" type="email" name="email" value="{{ organization.email }}" required />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Contact Email</label>
+                <input class="form-control" type="email" name="contact_email" value="{{ organization.contact_email or organization.email }}" required />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Phone Number</label>
+                <input class="form-control" name="phone" value="{{ organization.phone }}" />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Full Address & Location</label>
+                <input class="form-control" name="location" value="{{ organization.location }}" required />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Organization Logo Image</label>
+              <input class="form-control" type="file" name="logo" accept="image/png,image/jpeg,image/gif,image/webp" />
+              <small class="text-muted">The admin can replace the organization logo here. Leave empty to keep the current logo.</small>
+            </div>
+
+            <p class="small text-muted mb-2">Leave password fields empty to keep current password.</p>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">New Password</label>
+                <input class="form-control" type="password" name="password" minlength="6" />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Confirm New Password</label>
+                <input class="form-control" type="password" name="confirm_password" minlength="6" />
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Description & Company Details</label>
+              <textarea class="form-control" name="description" rows="4">{{ organization.description }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success fw-semibold"><i class="bi bi-check-circle me-1"></i>Save Organization Changes</button>
+            <a class="btn btn-link text-muted" href="{{ url_for('manage_organizations') }}">Cancel</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

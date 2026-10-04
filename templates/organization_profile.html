@@ -1,1 +1,98 @@
-{% extends 'base.html' %}{% block content %}<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-8"><span class="eyebrow">Organization identity</span><h1 class="fw-bold">Organization profile</h1><div class="card border-0 shadow-sm"><div class="card-body p-4"><form method="post" enctype="multipart/form-data"><div class="text-center mb-4">{% if organization and organization.logo_filename %}<img class="org-logo" src="{{url_for('static',filename=organization.logo_filename)}}" alt="Organization logo">{% else %}<div class="org-logo placeholder-avatar">O</div>{% endif %}<label class="form-label d-block mt-2">Organization logo</label><input class="form-control" type="file" name="logo" accept="image/png,image/jpeg,image/gif,image/webp"></div><div class="row"><div class="col-md-6"><label class="form-label">Organization name</label><input class="form-control mb-3" name="organization_name" value="{{organization.organization_name if organization else ''}}" required></div><div class="col-md-6"><label class="form-label">Contact person</label><input class="form-control mb-3" name="contact_person" value="{{organization.contact_person if organization else ''}}" required></div></div><div class="row"><div class="col-md-6"><label class="form-label">Phone</label><input class="form-control mb-3" name="phone" value="{{organization.phone if organization else ''}}"></div><div class="col-md-6"><label class="form-label">District only</label><input class="form-control mb-3" name="location" value="{{organization.location if organization else ''}}" placeholder="District only, e.g. Kathmandu"></div></div><label class="form-label">About the organization</label><textarea class="form-control mb-3" name="description" rows="4">{{organization.description if organization else ''}}</textarea><button class="btn btn-success">Save organization profile</button></form></div></div></div></div></div>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <span class="eyebrow">Organization Identity</span>
+          <h1 class="fw-bold mb-0">Organization Profile & Details</h1>
+        </div>
+        <a href="{{ url_for('organization_dashboard') }}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 p-md-5">
+          <form method="post" enctype="multipart/form-data">
+            
+            <!-- Logo Header Display -->
+            <div class="d-flex align-items-center gap-4 mb-4 pb-4 border-bottom">
+              {% if organization and organization.logo_filename %}
+                <img src="{{ url_for('static', filename=organization.logo_filename if organization.logo_filename.startswith('uploads/') else 'uploads/' + organization.logo_filename) }}" alt="Organization Logo" class="rounded border shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" />
+              {% else %}
+                <div class="rounded bg-success text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 80px; height: 80px; font-size: 2.2rem;">
+                  {{ (organization.organization_name or 'O')[0]|upper }}
+                </div>
+              {% endif %}
+              <div class="flex-grow-1">
+                <h3 class="fw-bold mb-1 text-dark">{{ organization.organization_name if organization else 'My Organization' }}</h3>
+                <span class="badge bg-primary-subtle text-primary border border-primary fs-6 me-2">
+                  <i class="bi bi-building me-1"></i>{{ organization.organization_type or 'Non-Governmental Organization (NGO)' }}
+                </span>
+                <small class="text-muted d-block mt-1"><i class="bi bi-geo-alt me-1"></i>{{ organization.location or 'Location not specified' }}</small>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold" for="logo">Upload / Change Organization Logo Image</label>
+              <input class="form-control" id="logo" type="file" name="logo" accept="image/png,image/jpeg,image/gif,image/webp" />
+              <small class="text-muted d-block mt-1">PNG, JPG, GIF, or WEBP logo image (e.g. Red Cross emblem or official organization logo).</small>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Organization Name</label>
+                <input class="form-control" name="organization_name" value="{{ organization.organization_name if organization else '' }}" required />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Organization Type / Category</label>
+                <select class="form-select" name="organization_type" required>
+                  {% for opt in ORGANIZATION_TYPE_OPTIONS %}
+                    <option value="{{ opt }}" {% if organization and organization.organization_type == opt %}selected{% endif %}>{{ opt }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Username</label>
+                <input class="form-control" name="username" value="{{ organization.username if organization else '' }}" pattern="[A-Za-z0-9_]+" required />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Contact Person</label>
+                <input class="form-control" name="contact_person" value="{{ organization.contact_person if organization else '' }}" required />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Contact Email Address</label>
+                <input class="form-control" type="email" name="contact_email" value="{{ organization.contact_email or organization.email if organization else '' }}" required />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Phone Number</label>
+                <input class="form-control" name="phone" value="{{ organization.phone if organization else '' }}" />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Full Address & Location</label>
+              <input class="form-control" name="location" value="{{ organization.location if organization else '' }}" placeholder="Full address (e.g. Lazimpat-2, Kathmandu, Bagmati)" required />
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold">About the Organization & Company Details</label>
+              <textarea class="form-control" name="description" rows="4">{{ organization.description if organization else '' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success fw-semibold py-2 px-4"><i class="bi bi-check-circle me-1"></i>Save Organization Profile</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

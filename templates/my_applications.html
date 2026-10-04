@@ -1,1 +1,203 @@
-{% extends 'base.html' %}{% block content %}<div class="container py-5"><h1 class="fw-bold mb-2">My applications</h1><p class="text-muted mb-4">Update your profile whenever your skills or free days change; results are recalculated automatically.</p>{% if applications %}<div class="table-responsive card shadow-sm border-0"><table class="table table-hover align-middle mb-0"><thead class="table-success"><tr><th>Task</th><th>Jaccard similarity</th><th>Automatic result</th></tr></thead><tbody>{% for a in applications %}<tr><td class="fw-semibold">{{a.title}}</td><td>{{'%.0f'|format(a.score*100)}}%</td><td><span class="badge text-bg-{{'success' if a.status in ['Qualified','Accepted','Completed'] else 'danger' if a.status in ['Rejected','Not qualified'] else 'warning'}}">{{a.status}}</span></td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="alert alert-info">No applications yet. <a href="{{url_for('tasks')}}">Explore tasks</a>.</div>{% endif %}</div>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <span class="eyebrow">Volunteer Activity</span>
+      <h1 class="fw-bold mb-1">My Volunteer Applications</h1>
+      <p class="text-muted mb-0">
+        Track your application statuses. Click on any application or status badge to view decision details, approval timestamp, and organization contact email & location.
+      </p>
+    </div>
+    <a href="{{ url_for('tasks') }}" class="btn btn-outline-success fw-semibold">
+      <i class="bi bi-search me-1"></i>Browse Volunteer Tasks
+    </a>
+  </div>
+
+  {% if applications %}
+  <div class="table-responsive card shadow-sm border-0 mt-3">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-4">Task Work</th>
+          <th>Organization</th>
+          <th>Jaccard Match</th>
+          <th>Approval Status</th>
+          <th class="pe-4 text-end">Action / Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in applications %}
+        <tr>
+          <td class="ps-4">
+            <span class="fw-bold text-dark d-block">{{ a.title }}</span>
+            <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ a.task_location }}</small>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              {% if a.organization_logo %}
+                <img src="{{ url_for('static', filename=a.organization_logo if a.organization_logo.startswith('uploads/') else 'uploads/' + a.organization_logo) }}" alt="Logo" class="rounded border" style="width: 32px; height: 32px; object-fit: cover;" />
+              {% else %}
+                <div class="rounded bg-success text-white d-flex align-items-center justify-content-center fw-bold small" style="width: 32px; height: 32px;">
+                  {{ (a.organization_name or 'O')[0]|upper }}
+                </div>
+              {% endif %}
+              <div>
+                <span class="fw-semibold text-dark d-block">{{ a.organization_name }}</span>
+                <small class="text-muted">{{ a.organization_type or 'NGO' }}</small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-success-subtle text-success border border-success px-2 py-1 fs-6">
+              {{ '%.2f'|format(a.score * 100) }}% Match
+            </span>
+          </td>
+          <td>
+            <button type="button" class="btn p-0 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#appDetailModal{{ a.id }}" title="Click for approval date, time, and organization details">
+              {% if a.status == 'Pending' %}
+                <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pending Approval</span>
+              {% elif a.status == 'Accepted' %}
+                <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Approved by Organization</span>
+              {% elif a.status == 'Rejected' %}
+                <span class="badge bg-danger"><i class="bi bi-x-circle-fill me-1"></i>Application Rejected</span>
+              {% elif a.status == 'Completed' %}
+                <span class="badge bg-primary"><i class="bi bi-award-fill me-1"></i>Work Completed</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ a.status }}</span>
+              {% endif %}
+            </button>
+          </td>
+          <td class="pe-4 text-end">
+            <button class="btn btn-sm btn-outline-success fw-semibold" data-bs-toggle="modal" data-bs-target="#appDetailModal{{ a.id }}">
+              <i class="bi bi-info-circle me-1"></i>View Details
+            </button>
+          </td>
+        </tr>
+
+        <!-- Application Detail Modal -->
+        <div class="modal fade" id="appDetailModal{{ a.id }}" tabindex="-1" aria-labelledby="appDetailModalLabel{{ a.id }}" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+              <div class="modal-header bg-light">
+                <div class="d-flex align-items-center gap-3">
+                  {% if a.organization_logo %}
+                    <img src="{{ url_for('static', filename=a.organization_logo if a.organization_logo.startswith('uploads/') else 'uploads/' + a.organization_logo) }}" alt="Logo" class="rounded border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;" />
+                  {% else %}
+                    <div class="rounded bg-success text-white d-flex align-items-center justify-content-center fw-bold fs-4 shadow-sm" style="width: 50px; height: 50px;">
+                      {{ (a.organization_name or 'O')[0]|upper }}
+                    </div>
+                  {% endif %}
+                  <div>
+                    <h5 class="modal-title fw-bold text-dark mb-0">{{ a.organization_name }}</h5>
+                    <span class="badge bg-primary-subtle text-primary border border-primary small">
+                      <i class="bi bi-building me-1"></i>{{ a.organization_type or 'Non-Governmental Organization (NGO)' }}
+                    </span>
+                  </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              
+              <div class="modal-body p-4">
+                <!-- Status Banner -->
+                <div class="alert {% if a.status == 'Accepted' %}alert-success{% elif a.status == 'Completed' %}alert-primary{% elif a.status == 'Rejected' %}alert-danger{% else %}alert-warning{% endif %} d-flex align-items-center justify-content-between mb-4">
+                  <div>
+                    <h6 class="fw-bold mb-1">
+                      {% if a.status == 'Accepted' %}
+                        <i class="bi bi-check-circle-fill me-1"></i>Approved by Organization
+                      {% elif a.status == 'Completed' %}
+                        <i class="bi bi-award-fill me-1"></i>Volunteer Work Completed
+                      {% elif a.status == 'Rejected' %}
+                        <i class="bi bi-x-circle-fill me-1"></i>Application Rejected
+                      {% else %}
+                        <i class="bi bi-hourglass-split me-1"></i>Pending Approval
+                      {% endif %}
+                    </h6>
+                    <small class="d-block text-dark">
+                      <b>Decision Date & Time:</b> 
+                      {% if a.updated_at %}
+                        {{ a.updated_at.strftime('%B %d, %Y at %I:%M %p') if a.updated_at.strftime is defined else a.updated_at }}
+                      {% else %}
+                        Recently updated
+                      {% endif %}
+                    </small>
+                  </div>
+                  <span class="badge bg-white text-dark border px-3 py-2 fs-6 fw-bold">
+                    {{ '%.2f'|format(a.score * 100) }}% Match
+                  </span>
+                </div>
+
+                <div class="row g-3">
+                  <!-- Organization Contact Details -->
+                  <div class="col-md-6">
+                    <div class="card h-100 border bg-light">
+                      <div class="card-body p-3">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-building me-1 text-success"></i>Organization Contact Info</h6>
+                        <p class="small mb-2">
+                          <b class="text-dark">Organization Name:</b> {{ a.organization_name }}
+                        </p>
+                        <p class="small mb-2">
+                          <b class="text-dark">Contact Person:</b> {{ a.contact_person or 'Coordinator' }}
+                        </p>
+                        <p class="small mb-2">
+                          <b class="text-dark">Contact Email:</b> 
+                          <a href="mailto:{{ a.contact_email }}" class="text-decoration-none fw-bold text-success">{{ a.contact_email or 'Not provided' }}</a>
+                        </p>
+                        <p class="small mb-2">
+                          <b class="text-dark">Contact Phone:</b> {{ a.contact_phone or 'Not provided' }}
+                        </p>
+                        <p class="small mb-0">
+                          <b class="text-dark">Full Address & Location:</b> {{ a.organization_location or 'Not provided' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Task Work Details -->
+                  <div class="col-md-6">
+                    <div class="card h-100 border bg-light">
+                      <div class="card-body p-3">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-card-checklist me-1 text-success"></i>Volunteer Work Details</h6>
+                        <p class="small mb-2">
+                          <b class="text-dark">Task Title:</b> {{ a.title }}
+                        </p>
+                        <p class="small mb-2">
+                          <b class="text-dark">Work Location:</b> {{ a.task_location }}
+                        </p>
+                        <p class="small mb-2">
+                          <b class="text-dark">Schedule:</b> {{ a.start_date }} to {{ a.end_date }}
+                        </p>
+                        <p class="small mb-0 text-muted">
+                          {{ a.task_description }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {% if a.review_text %}
+                <div class="alert alert-info mt-3 mb-0">
+                  <h6 class="fw-bold mb-1"><i class="bi bi-chat-left-text me-1"></i>Organization Certificate & Review</h6>
+                  <p class="small mb-1">"{{ a.review_text }}"</p>
+                  <small class="fw-bold text-dark">Rating: {{ a.rating or 5 }} / 5 Stars ⭐</small>
+                </div>
+                {% endif %}
+              </div>
+              
+              <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary fw-semibold" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-info shadow-sm mt-3">
+    <i class="bi bi-info-circle me-1"></i>You haven't submitted any applications yet. <a href="{{ url_for('tasks') }}" class="fw-bold text-decoration-none">Explore volunteer tasks &rarr;</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

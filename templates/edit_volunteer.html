@@ -1,1 +1,159 @@
-{% extends 'base.html' %}{% block content %}{% set days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] %}<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-8"><h1 class="fw-bold">Edit volunteer</h1><div class="card border-0 shadow-sm"><div class="card-body p-4"><form method="post"><div class="row"><div class="col-md-6"><label class="form-label">Name</label><input class="form-control mb-3" name="name" value="{{volunteer.name}}"></div><div class="col-md-6"><label class="form-label">Date of birth</label><input class="form-control mb-3" type="date" name="date_of_birth" value="{{volunteer.date_of_birth or ''}}"></div></div><label class="form-label">Email</label><input class="form-control mb-3" type="email" name="email" value="{{volunteer.email}}"><label class="form-label">Skills</label><input class="form-control mb-3" name="skills" value="{{volunteer.skills or ''}}"><label class="form-label">Interests</label><input class="form-control mb-3" name="interests" value="{{volunteer.interests or ''}}"><label class="form-label">Free days</label><div class="check-grid mb-3">{% for day in days %}<div class="form-check"><input class="form-check-input" type="checkbox" name="availability" value="{{day}}" id="day{{loop.index}}" {% if volunteer.availability and day|lower in volunteer.availability|lower %}checked{% endif %}><label class="form-check-label" for="day{{loop.index}}">{{day}}</label></div>{% endfor %}</div><label class="form-label">Location</label><input class="form-control mb-3" name="location" value="{{volunteer.location or ''}}"><button class="btn btn-success">Save volunteer</button><a class="btn btn-link" href="{{url_for('manage_volunteers')}}">Cancel</a></form></div></div></div></div></div>{% endblock %}
+{% extends 'base.html' %} {% block content %} {% set days = ['Monday',
+'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="fw-bold">Edit volunteer</h1>
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data">
+            <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+              {% if volunteer.profile_photo %}
+              <img
+                class="small-avatar border"
+                src="{{ url_for('static', filename=volunteer.profile_photo if volunteer.profile_photo.startswith('uploads/') else 'uploads/' + volunteer.profile_photo) }}"
+                alt="{{ volunteer.name }}"
+              />
+              {% else %}
+              <div class="small-avatar placeholder-avatar rounded-circle">
+                {{ volunteer.name[0]|upper }}
+              </div>
+              {% endif %}
+              <div class="flex-grow-1">
+                <label class="form-label fw-semibold" for="photo">Volunteer profile image</label>
+                <input
+                  class="form-control"
+                  id="photo"
+                  type="file"
+                  name="photo"
+                  accept="image/png,image/jpeg,image/gif,image/webp"
+                />
+                <small class="text-muted">Leave empty to keep the current image.</small>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label">Name</label
+                ><input
+                  class="form-control mb-3"
+                  name="name"
+                  value="{{ volunteer.name }}"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Username</label
+                ><input
+                  class="form-control mb-3"
+                  name="username"
+                  value="{{ volunteer.username }}"
+                  pattern="[A-Za-z0-9_]+"
+                  required
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label">Email</label
+                ><input
+                  class="form-control mb-3"
+                  type="email"
+                  name="email"
+                  value="{{ volunteer.email }}"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Date of birth</label
+                ><input
+                  class="form-control mb-3"
+                  type="date"
+                  name="date_of_birth"
+                  value="{{ volunteer.date_of_birth or '' }}"
+                />
+              </div>
+            </div>
+            <p class="small text-muted mb-2">
+              Leave the password fields empty to keep the current password.
+            </p>
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label">New password</label
+                ><input
+                  class="form-control mb-3"
+                  type="password"
+                  name="password"
+                  minlength="6"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Confirm new password</label
+                ><input
+                  class="form-control mb-3"
+                  type="password"
+                  name="confirm_password"
+                  minlength="6"
+                />
+              </div>
+            </div>
+            <label class="form-label">Skills</label
+            ><input
+              class="form-control mb-3"
+              name="skills"
+              value="{{ volunteer.skills or '' }}"
+            />
+            <label class="form-label">Interests</label
+            ><input
+              class="form-control mb-3"
+              name="interests"
+              value="{{ volunteer.interests or '' }}"
+            />
+            <label class="form-label">Free days</label>
+            <div class="check-grid mb-3">
+              {% for day in days %}
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="availability"
+                  value="{{ day }}"
+                  id="day{{ loop.index }}"
+                  {%
+                  if
+                  volunteer.availability
+                  and
+                  day|lower
+                  in
+                  volunteer.availability|lower
+                  %}checked{%
+                  endif
+                  %}
+                /><label class="form-check-label" for="day{{ loop.index }}"
+                  >{{ day }}</label
+                >
+              </div>
+              {% endfor %}
+            </div>
+            <label class="form-label">Location</label
+            ><input
+              class="form-control mb-3"
+              name="location"
+              value="{{ volunteer.location or '' }}"
+            />
+            <label class="form-label fw-semibold">Education / Qualification Level</label>
+            <select class="form-select mb-3" name="education_level" required>
+              {% for opt in VOLUNTEER_EDUCATION_OPTIONS %}
+                <option value="{{ opt }}" {% if volunteer.education_level == opt or (not volunteer.education_level and opt == 'Intermediate (10+2) / High School') %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-success">Save volunteer</button
+            ><a class="btn btn-link" href="{{ url_for('manage_volunteers') }}"
+              >Cancel</a
+            >
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

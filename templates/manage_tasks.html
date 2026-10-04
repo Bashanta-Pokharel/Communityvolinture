@@ -1,1 +1,210 @@
-{% extends 'base.html' %}{% block content %}{% set days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] %}<div class="container py-5"><div class="row g-4"><div class="col-lg-6"><span class="eyebrow">Organization workspace</span><h1 class="h2 fw-bold">Post a volunteer task</h1><p class="text-muted">Add a clear schedule, skills, interests, and an optional task image.</p><div class="card border-0 shadow-sm"><div class="card-body p-4"><form method="post" enctype="multipart/form-data"><label class="form-label">Task title</label><input class="form-control mb-3" name="title" required><label class="form-label">Description</label><textarea class="form-control mb-3" name="description" required></textarea><div class="row"><div class="col-md-6"><label class="form-label">Start date</label><input class="form-control mb-3" type="date" name="start_date" required></div><div class="col-md-6"><label class="form-label">End date</label><input class="form-control mb-3" type="date" name="end_date" required></div></div><label class="form-label fw-bold">Required skills</label><div class="check-grid mb-2">{% for skill in skills %}<div class="form-check"><input class="form-check-input" type="checkbox" name="required_skills" value="{{skill.name}}" id="skill{{loop.index}}"><label class="form-check-label" for="skill{{loop.index}}">{{skill.name}}</label></div>{% endfor %}</div><input class="form-control mb-3" name="new_skill" placeholder="Add a new skill, e.g. Video Editing"><label class="form-label fw-bold">Task hobbies / interests</label><div class="check-grid mb-2">{% for interest in interests %}<div class="form-check"><input class="form-check-input" type="checkbox" name="interests" value="{{interest.name}}" id="interest{{loop.index}}"><label class="form-check-label" for="interest{{loop.index}}">{{interest.name}}</label></div>{% endfor %}</div><input class="form-control mb-3" name="new_interest" placeholder="Add a new hobby or interest"><label class="form-label fw-bold">Days volunteers are needed</label><div class="check-grid mb-3">{% for day in days %}<div class="form-check"><input class="form-check-input" type="checkbox" name="availability" value="{{day}}" id="needed{{loop.index}}"><label class="form-check-label" for="needed{{loop.index}}">{{day}}</label></div>{% endfor %}</div><label class="form-label">Task image</label><input class="form-control mb-3" type="file" name="task_image" accept="image/png,image/jpeg,image/gif,image/webp"><label class="form-label">District only</label><input class="form-control mb-3" name="location" placeholder="District only, e.g. Kathmandu" required><button class="btn btn-success">Post task</button></form></div></div></div><div class="col-lg-6"><span class="eyebrow">Task ownership</span><h2 class="h3 fw-bold">Tasks you can manage</h2><div class="list-group">{% for task in tasks %}<div class="list-group-item d-flex justify-content-between align-items-center gap-2"><div><b>{{task.title}}</b><br><small><b>Posted by:</b> {{task.organization_name}}<br><b>Dates:</b> {{task.start_date or 'Not set'}} to {{task.end_date or 'Not set'}}<br>{{task.required_skills}} · {{task.availability}} · {{task.location}}</small></div><div class="d-flex gap-1"><a class="btn btn-sm btn-outline-success" href="{{url_for('edit_task',task_id=task.id)}}">Edit</a><form method="post" action="{{url_for('delete_task',task_id=task.id)}}" onsubmit="return confirm('Delete this task and its applications?')"><button class="btn btn-sm btn-outline-danger">Delete</button></form></div></div>{% else %}<p class="text-muted">No tasks yet.</p>{% endfor %}</div></div></div></div>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+{% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+<div class="container py-5">
+  {% if session.get('role') == 'admin' %}
+    <!-- Admin View: Manage & Edit All System Tasks (Admin Cannot Post Tasks) -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <span class="eyebrow">Administrator Workspace</span>
+        <h1 class="h2 fw-bold mb-1">Manage System Volunteer Tasks</h1>
+        <p class="text-muted mb-0">View, edit details, or remove any volunteer opportunity posted across all organizations.</p>
+      </div>
+      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Admin Dashboard
+      </a>
+    </div>
+
+    <div class="alert alert-info border shadow-sm mb-4">
+      <i class="bi bi-info-circle-fill text-info me-2 fs-5"></i>
+      <strong>Task Creation Policy:</strong> Tasks are created and posted by registered Organizations. Administrators have full oversight permissions to <strong>edit work details</strong> or <strong>delete tasks</strong>.
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0"><i class="bi bi-list-task text-success me-2"></i>All System Posted Tasks ({{ tasks|length }})</h5>
+      </div>
+      <div class="card-body p-4 pt-2">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Task & Skills</th>
+                <th>Posted By</th>
+                <th>Min Education</th>
+                <th>Dates & Location</th>
+                <th class="text-end">Admin Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in tasks %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-3">
+                    <img src="{{ url_for('static', filename=task.image_filename or 'images/tasks/cleanup.svg') }}" alt="{{ task.title }}" class="rounded border shadow-sm" style="width: 48px; height: 48px; object-fit: cover;" />
+                    <div>
+                      <strong class="text-dark d-block">{{ task.title }}</strong>
+                      <small class="text-muted">{{ task.required_skills }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border"><i class="bi bi-building me-1 text-primary"></i>{{ task.organization_name }}</span>
+                </td>
+                <td>
+                  <span class="badge bg-primary-subtle text-primary border border-primary fw-normal">
+                    <i class="bi bi-mortarboard me-1"></i>{{ task.min_education or 'No Formal Education Required' }}
+                  </span>
+                </td>
+                <td>
+                  <small class="text-muted d-block"><i class="bi bi-calendar-range me-1"></i>{{ task.start_date or 'TBA' }} to {{ task.end_date or 'TBA' }}</small>
+                  <small class="text-muted"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ task.location }}</small>
+                </td>
+                <td class="text-end">
+                  <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-sm btn-outline-success me-1" title="Edit task details">
+                    <i class="bi bi-pencil"></i> Edit
+                  </a>
+                  <form method="post" action="{{ url_for('delete_task', task_id=task.id) }}" class="d-inline" onsubmit="return confirm('Delete this task and its applications?');">
+                    <button class="btn btn-sm btn-outline-danger" title="Delete task">
+                      <i class="bi bi-trash"></i> Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">No volunteer tasks posted yet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+
+    <!-- Organization Workspace: Post Task Form + My Posted Tasks List -->
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <span class="eyebrow">Organization workspace</span>
+        <h1 class="h2 fw-bold">Post a volunteer task</h1>
+        <p class="text-muted">
+          Add a clear schedule, skills, interests, and an optional task image.
+        </p>
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data">
+              <label class="form-label fw-bold">Task title</label>
+              <input class="form-control mb-3" name="title" required />
+
+              <label class="form-label fw-bold">Description</label>
+              <textarea class="form-control mb-3" name="description" rows="3" required></textarea>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Start date</label>
+                  <input class="form-control mb-3" type="date" name="start_date" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">End date</label>
+                  <input class="form-control mb-3" type="date" name="end_date" required />
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold">Minimum Education Needed</label>
+                <select class="form-select" name="min_education" required>
+                  {% for opt in TASK_MIN_EDUCATION_OPTIONS %}
+                    <option value="{{ opt }}" {% if opt == 'No Formal Education Required' %}selected{% endif %}>{{ opt }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <label class="form-label fw-bold">Required skills</label>
+              <div class="check-grid mb-2" id="requiredSkills">
+                {% for skill in skills %}
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="required_skills" value="{{ skill.name }}" id="skill{{ loop.index }}" />
+                  <label class="form-check-label" for="skill{{ loop.index }}">{{ skill.name }}</label>
+                </div>
+                {% endfor %}
+              </div>
+
+              <label class="form-label" for="newSkill">New skill</label>
+              <div class="input-group mb-1">
+                <input class="form-control" id="newSkill" name="new_skill" placeholder="Example: Video Editing" />
+                <button class="btn btn-outline-success" type="button" data-add-skill>Add skill to database</button>
+              </div>
+              <small class="text-muted d-block mb-3" id="skillMessage">Organizations and admins can add new skills.</small>
+
+              <label class="form-label fw-bold">Task hobbies / interests</label>
+              <div class="check-grid mb-2" id="taskInterests">
+                {% for interest in interests %}
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="interests" value="{{ interest.name }}" id="interest{{ loop.index }}" />
+                  <label class="form-check-label" for="interest{{ loop.index }}">{{ interest.name }}</label>
+                </div>
+                {% endfor %}
+              </div>
+
+              <label class="form-label" for="newInterest">New hobby / interest</label>
+              <div class="input-group mb-1">
+                <input class="form-control" id="newInterest" name="new_interest" placeholder="Example: Mental Health" />
+                <button class="btn btn-outline-success" type="button" data-add-interest>Add interest to database</button>
+              </div>
+              <small class="text-muted d-block mb-3" id="interestMessage">Organizations and admins can add new interests.</small>
+
+              <label class="form-label fw-bold">Days volunteers are needed</label>
+              <div class="check-grid mb-3">
+                {% for day in days %}
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="availability" value="{{ day }}" id="needed{{ loop.index }}" />
+                  <label class="form-check-label" for="needed{{ loop.index }}">{{ day }}</label>
+                </div>
+                {% endfor %}
+              </div>
+
+              <label class="form-label fw-bold" for="taskImage">Task image</label>
+              <input class="form-control" id="taskImage" type="file" name="task_image" accept="image/png,image/jpeg" data-fixed-image />
+              <small class="form-text text-muted d-block mb-3">Optional: use a PNG or JPG photo.</small>
+
+              <label class="form-label fw-bold">District Location</label>
+              <input class="form-control mb-3" name="location" placeholder="District only, e.g. Kathmandu" required />
+
+              <button type="submit" class="btn btn-success fw-semibold w-100 py-2"><i class="bi bi-plus-circle me-1"></i>Post Task</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <span class="eyebrow">Task ownership</span>
+        <h2 class="h3 fw-bold">My Posted Tasks</h2>
+        <div class="list-group">
+          {% for task in tasks %}
+          <div class="list-group-item d-flex justify-content-between align-items-center gap-2 py-3">
+            <div>
+              <b class="text-dark fs-6">{{ task.title }}</b><br />
+              <small class="text-muted">
+                <b>Dates:</b> {{ task.start_date or 'Not set' }} to {{ task.end_date or 'Not set' }}<br />
+                <b>Skills:</b> {{ task.required_skills }}<br />
+                <b>Min Edu:</b> {{ task.min_education or 'No Formal Education Required' }} · <b>Days:</b> {{ task.availability }} · <b>Loc:</b> {{ task.location }}
+              </small>
+            </div>
+            <div class="d-flex gap-1">
+              <a class="btn btn-sm btn-outline-success" href="{{ url_for('edit_task', task_id=task.id) }}">Edit</a>
+              <form method="post" action="{{ url_for('delete_task', task_id=task.id) }}" onsubmit="return confirm('Delete this task and its applications?');">
+                <button class="btn btn-sm btn-outline-danger">Delete</button>
+              </form>
+            </div>
+          </div>
+          {% else %}
+          <p class="text-muted">No tasks posted yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

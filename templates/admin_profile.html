@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin profile · VolunteerHub{% endblock %}
+
+{% block content %}
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="h2 fw-bold mb-1">My admin profile</h1>
+            <p class="text-muted mb-4">Update the single administrator account for this system.</p>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="text-center mb-4">
+                            {% if admin.photo_filename %}
+                            <img class="rounded-circle border shadow-sm" src="{{ url_for('static', filename=admin.photo_filename) }}" alt="Admin profile" style="width: 104px; height: 104px; object-fit: cover;">
+                            {% else %}
+                            <span class="nav-avatar-placeholder d-inline-flex" style="width: 104px; height: 104px; font-size: 2rem;">{{ admin.name[0] }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="name">Full name</label>
+                                <input class="form-control" id="name" name="name" value="{{ admin.name }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="username">Username</label>
+                                <input class="form-control" id="username" name="username" value="{{ admin.username }}" pattern="[A-Za-z0-9_]+" minlength="3" maxlength="30" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="email">Email</label>
+                                <input class="form-control" id="email" type="email" name="email" value="{{ admin.email }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="password">New password</label>
+                                <input class="form-control" id="password" type="password" name="password" minlength="6">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="confirmPassword">Confirm new password</label>
+                                <input class="form-control" id="confirmPassword" type="password" name="confirm_password" minlength="6">
+                            </div>
+                            <div class="col-12">
+                                <p class="small text-muted mb-2">Leave password fields empty to keep the current password.</p>
+                                <label class="form-label" for="photo">Profile picture</label>
+                                <input class="form-control" id="photo" type="file" name="photo" accept=".png,.jpg,.jpeg,.gif,.webp">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-success mt-4" type="submit"><i class="bi bi-check-lg me-1"></i>Save profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

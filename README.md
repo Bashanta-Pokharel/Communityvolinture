@@ -1,74 +1,60 @@
 # Community Volunteer System
 
-A small beginner Flask application with two roles: **volunteer** and **organization/admin**. It uses SQLite, so no MySQL server is needed.
+A simple Flask project where volunteers apply for work, organizations post work, and an admin manages both.
 
-## Run it
+## Run the project
+
+1. Start **MySQL** in XAMPP.
+2. Open this project folder in the terminal.
+3. Run these commands:
 
 ```bash
-python3 --version
-python3 -m venv venv
-source venv/bin/activate       # macOS/Linux
-# Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
-python3 app.py
+python app.py
 ```
 
-Open `http://127.0.0.1:5000`. Stop the app with `Ctrl+C`; leave the environment with `deactivate`.
+4. Open `http://127.0.0.1:5000` in the browser.
 
-Demo organization account: `admin@community.local` / `admin123`.
+The project creates the `community_volinturee` MySQL database automatically when XAMPP MySQL is running.
 
-## Project structure
+## Demo login accounts
 
-```
-app.py                    Flask routes, login, database helpers, and matching function
-schema.sql                SQLite table definitions
-community_volunteer.db   Created automatically; contains the application data
-templates/                Jinja HTML pages rendered by Flask
-static/css/style.css      Small custom styles; Bootstrap does most visual work
-static/js/script.js       Optional JavaScript area
-requirements.txt          Python packages needed by the project
-```
-
-Browser → Flask route in `app.py` → SQLite database (when needed) → Jinja template → browser.
-
-## Data model
-
-| Table | What it stores | Important relationship |
+| Role | Username / email | Password |
 |---|---|---|
-| `users` | account name, email, password hash, role | One user is a volunteer or admin |
-| `volunteer_profiles` | skills, interests, availability, location | `user_id` links to one volunteer user |
-| `tasks` | organization-created opportunities and requirements | Each task can have many applications |
-| `applications` | volunteer, task, status, similarity score | `volunteer_id` and `task_id` link the two sides |
+| Admin | `admin` or `admin@gmail.com` | `admin123` |
+| Volunteer | `bashanta27` or `bashanta@gmail.com` | `Bashanta123` |
+| Volunteer | `sweekriti42` or `sweekriti@gmail.com` | `Bashanta123` |
+| Volunteer | `kusum65` or `kusum@gmail.com` | `Bashanta123` |
+| Volunteer | `aagaman18` or `aagaman@gmail.com` | `Bashanta123` |
+| Volunteer | `bhuban83` or `bhuban@gmail.com` | `Bashanta123` |
 
-A primary key is the table’s unique `id`. A foreign key is a link to an `id` in another table.
+These are classroom demo accounts. Passwords are stored as hashes in the MySQL database.
 
-## The only matching algorithm: Jaccard similarity
+## Main files
+
+| File | Simple purpose |
+|---|---|
+| `app.py` | Flask routes, login, and MySQL connection |
+| `schema.sql` | MySQL tables |
+| `services/matching.py` | Jaccard similarity calculation |
+| `templates/` | HTML pages |
+| `static/css/style.css` | Page colors and layout |
+| `static/js/script.js` | Browser actions and status indicator |
+
+## Jaccard similarity
+
+The project uses one matching algorithm:
 
 `J(A, B) = |A ∩ B| / |A ∪ B|`
 
-- `A`: volunteer terms, such as skills.
-- `B`: task terms, such as required skills.
-- `A ∩ B`: intersection—terms shared by both sets.
-- `A ∪ B`: union—all unique terms from both sets.
-- `| |`: the number of terms in that set.
+- `A` is the volunteer’s skills.
+- `B` is the work’s required skills.
+- `A ∩ B` means the skills both have.
+- `A ∪ B` means every different skill from both lists.
 
-Example: volunteer skills = `{python, first aid, teaching}`; task skills = `{first aid, teaching, communication}`. The intersection is `{first aid, teaching}` (2); the union is `{python, first aid, teaching, communication}` (4). Therefore `J = 2 / 4 = 0.50`, or **50%**.
+Example: volunteer has `Teaching, First Aid`; a task needs `Teaching, Communication`.
 
-Study the Jaccard code in `services/matching.py`. Its `terms()` function makes comma-separated form input into Python sets. Its `jaccard_similarity()` function uses `&` for the intersection and `|` for the union, then calculates `len(intersection) / len(union)`. The Similarity Tool form lets you compare skills, interests, or any other comma-separated terms. No weighted score or other matching algorithm is used.
+Common skills = 1 (`Teaching`). All different skills = 3. The result is `1 / 3 = 33%`.
 
-An application is automatically **Qualified** when its Jaccard skill score is at least 50% and the volunteer has at least one free day in common with the task. This is a simple project rule, not a universal rule. The volunteer receives an in-app message immediately; the organization can still accept, reject, or mark the completed job.
-
-## Bootstrap classes used
-
-| Class | Purpose |
-|---|---|
-| `container`, `row`, `col-md-*`, `col-lg-*` | Responsive page width and grid columns |
-| `navbar`, `navbar-expand-lg`, `navbar-dark`, `bg-success` | Responsive green navigation bar |
-| `card`, `card-body`, `card-footer`, `shadow-sm` | Group content into bordered, raised panels |
-| `btn`, `btn-success`, `btn-outline-success`, `btn-warning` | Styled action buttons |
-| `form-control`, `form-label` | Consistent accessible-looking form inputs and labels |
-| `table`, `table-hover`, `table-responsive` | Scrollable and readable application tables |
-| `alert`, `alert-success`, `alert-warning` | Temporary feedback messages after actions |
-| `badge`, `text-bg-success` | Small labels for locations and status |
-| `d-flex`, `justify-content-center`, `align-items-center` | Flexible alignment utilities |
-| `py-5`, `mb-3`, `mt-4`, `w-100` | Padding, margins, and full-width sizing |
+The Bashanta demo profile has 9 skills. Four demo works deliberately require 5, 6, 7, and 8 of those skills, so they show `55.56%`, `66.67%`, `77.78%`, and `88.89%` Jaccard similarity.

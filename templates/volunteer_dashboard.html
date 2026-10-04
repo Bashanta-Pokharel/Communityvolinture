@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-heading">
+  <div class="container py-4">
+    <span class="eyebrow">Volunteer dashboard</span>
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3">
+      <div>
+        <h1 class="fw-bold mb-1">Welcome, {{ session.get('user_name') }}</h1>
+        <p class="text-muted mb-0">Here are the six most recently posted volunteer opportunities.</p>
+      </div>
+      <a class="btn btn-success" href="{{ url_for('tasks') }}">
+        <i class="bi bi-briefcase me-1"></i>View all tasks
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="container py-5">
+  {% if not profile %}
+  <div class="alert alert-warning d-flex justify-content-between align-items-center gap-3">
+    <span><i class="bi bi-person-vcard me-1"></i>Complete your profile to see Jaccard similarity results.</span>
+    <a class="btn btn-sm btn-warning" href="{{ url_for('profile') }}">Complete profile</a>
+  </div>
+  {% endif %}
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100"><div class="card-body">
+        <small class="text-muted">My applications</small>
+        <div class="fs-3 fw-bold">{{ counts.applications }}</div>
+      </div></div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100"><div class="card-body">
+        <small class="text-muted">Completed work</small>
+        <div class="fs-3 fw-bold">{{ counts.completed }}</div>
+      </div></div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100"><div class="card-body">
+        <small class="text-muted">Qualified recent tasks</small>
+        <div class="fs-3 fw-bold">{{ counts.qualified }}</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 fw-bold mb-0">Recent tasks</h2>
+    <span class="text-muted small">Showing 6 newest tasks</span>
+  </div>
+
+  <div class="row g-4">
+    {% for task, match in task_matches %}
+    <div class="col-md-6 col-lg-4">
+      <article class="card task-card h-100 border-0 shadow-sm overflow-hidden">
+        <img
+          class="task-image"
+          src="{{ url_for('static', filename=task.image_filename or 'images/tasks/cleanup.svg') }}"
+          alt="{{ task.title }}"
+        />
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between gap-2 mb-2">
+            <span class="badge bg-success">{{ task.location }}</span>
+            <small class="text-muted">{{ task.availability }}</small>
+          </div>
+          <h3 class="h5 fw-bold">{{ task.title }}</h3>
+          <p class="small text-muted flex-grow-1">{{ task.description }}</p>
+          <p class="small mb-2"><b>Posted by:</b> {{ task.organization_name }}</p>
+          {% if match %}
+          <div class="match-box small mb-3">
+            <b>Jaccard match:</b> {{ '%.2f'|format(match.score * 100) }}%
+            {% if match.qualified %}
+              <span class="badge bg-success float-end">Qualified</span>
+            {% else %}
+              <span class="badge bg-secondary float-end">Update profile</span>
+            {% endif %}
+          </div>
+          {% endif %}
+          <a class="btn btn-outline-success w-100" href="{{ url_for('tasks') }}">View task</a>
+        </div>
+      </article>
+    </div>
+    {% else %}
+    <div class="col-12"><div class="alert alert-info">No volunteer opportunities are available yet.</div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

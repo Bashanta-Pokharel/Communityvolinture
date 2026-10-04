@@ -1,1 +1,1 @@
-"""Small service functions used by the Flask routes."""
+"""Services package for matching and logic."""

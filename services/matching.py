@@ -3,7 +3,7 @@
 Formula:
     J(A, B) = |A ∩ B| / |A ∪ B|
 
-A and B are sets of unique terms.  ∩ means terms common to both sets,
+A and B are sets of unique terms. ∩ means terms common to both sets,
 ∪ means every unique term from either set, and | | means set size.
 """
 

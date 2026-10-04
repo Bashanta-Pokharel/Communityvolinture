@@ -1,1 +1,59 @@
-{% extends 'base.html' %}{% block content %}<div class="container py-5"><div class="row justify-content-center"><div class="col-md-8 col-lg-5"><div class="card border-0 shadow"><div class="card-body p-4 p-md-5"><span class="eyebrow">Welcome back</span><h2 class="fw-bold">Log in</h2><p class="text-muted">Enter a username or email address, then your password.</p><form method="post"><label class="form-label">Username or email</label><input class="form-control mb-3" name="identifier" autocomplete="username" required><label class="form-label">Password</label><input class="form-control mb-4" type="password" name="password" autocomplete="current-password" required><button class="btn btn-success w-100">Log in</button></form><div class="login-hint mt-4"><b>Admin:</b> Bashanta or bashanta@gmail.com<br><b>Organization:</b> VolunteerHub Organization or organization@volunteerhub.local</div></div></div></div></div></div>{% endblock %}
+{% extends 'base.html' %} {% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-5">
+      <div class="card border-0 shadow">
+        <div class="card-body p-4 p-md-5">
+          <span class="eyebrow">Welcome back</span>
+          <h2 class="fw-bold">Log in</h2>
+          <p class="text-muted">
+            Enter a username or email address, then your password.
+          </p>
+
+          <form method="post">
+            <label class="form-label" for="identifier">Username or email</label>
+            <input
+              class="form-control mb-3"
+              id="identifier"
+              name="identifier"
+              autocomplete="username"
+              required
+            />
+            <label class="form-label" for="password">Password</label>
+            <input
+              class="form-control mb-4"
+              id="password"
+              type="password"
+              name="password"
+              autocomplete="current-password"
+              required
+            />
+            <button class="btn btn-success w-100">Log in</button>
+          </form>
+
+          <div class="border-top mt-4 pt-4">
+            <p class="fw-semibold mb-2">New to VolunteerHub?</p>
+            <div class="d-grid gap-2">
+              <a
+                class="btn btn-outline-success"
+                href="{{ url_for('register') }}"
+                >Register as volunteer</a
+              >
+              <a
+                class="btn btn-outline-secondary"
+                href="{{ url_for('register_organization') }}"
+                >Register as organization</a
+              >
+            </div>
+          </div>
+
+          <div class="login-hint mt-4">
+            <b>Admin:</b> admin or admin@gmail.com<br />
+            <b>Volunteer:</b> bashanta or sweekrit
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <span class="eyebrow">System Administration</span>
+      <h1 class="fw-bold mb-1">Database Catalogs Management</h1>
+      <p class="text-muted mb-0">Manage system-wide Education Qualifications, Volunteer Skills, and Hobbies / Interests catalog items stored in the database.</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Back to Admin Dashboard
+    </a>
+  </div>
+
+  <!-- Navigation Tabs for Catalogs -->
+  <ul class="nav nav-pills nav-fill mb-4 p-2 bg-light rounded border" id="catalogTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-bold py-2" id="education-tab" data-bs-toggle="tab" data-bs-target="#education-panel" type="button" role="tab">
+        <i class="bi bi-mortarboard me-2"></i>Education Qualifications ({{ education_list|length }})
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold py-2" id="skills-tab" data-bs-toggle="tab" data-bs-target="#skills-panel" type="button" role="tab">
+        <i class="bi bi-tools me-2"></i>Skills Catalog ({{ skills|length }})
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-bold py-2" id="interests-tab" data-bs-toggle="tab" data-bs-target="#interests-panel" type="button" role="tab">
+        <i class="bi bi-heart me-2"></i>Hobbies / Interests ({{ interests|length }})
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="catalogTabsContent">
+    
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- TAB 1: EDUCATION TYPES CATALOG -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div class="tab-pane fade show active" id="education-panel" role="tabpanel">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white py-3">
+              <h5 class="card-title fw-bold mb-0"><i class="bi bi-plus-circle me-2"></i>Add Education Type</h5>
+            </div>
+            <div class="card-body p-4">
+              <form method="post" action="{{ url_for('manage_education') }}">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Education Qualification Name</label>
+                  <input type="text" class="form-control" name="name" placeholder="e.g. Higher Diploma, Vocational Certificate" required />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Applicable Category</label>
+                  <select class="form-select" name="category" required>
+                    <option value="both" selected>Both Volunteer & Task Requirement</option>
+                    <option value="volunteer">Volunteer Qualification Only</option>
+                    <option value="task">Task Requirement Only</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Qualification Rank Level (1 to 10)</label>
+                  <input type="number" class="form-control" name="rank_level" value="3" min="1" max="10" required />
+                  <small class="text-muted">Higher rank levels indicate higher qualification (used for matching logic).</small>
+                </div>
+                <button type="submit" class="btn btn-success w-100 fw-semibold">
+                  <i class="bi bi-check-lg me-1"></i>Save Education Type
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+              <h5 class="fw-bold mb-0"><i class="bi bi-mortarboard text-success me-2"></i>Education Catalog Items</h5>
+              <span class="badge bg-success fs-6">{{ education_list|length }} Levels</span>
+            </div>
+            <div class="card-body p-4 pt-2">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Rank</th>
+                      <th>Education / Qualification Name</th>
+                      <th>Applies To</th>
+                      <th class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for edu in education_list %}
+                    <tr>
+                      <td><span class="badge bg-info-subtle text-info border border-info px-2 py-1 fs-6">Rank {{ edu.rank_level }}</span></td>
+                      <td><strong class="text-dark">{{ edu.name }}</strong></td>
+                      <td>
+                        {% if edu.category == 'both' %}
+                          <span class="badge bg-success-subtle text-success border border-success">Volunteer & Task</span>
+                        {% elif edu.category == 'volunteer' %}
+                          <span class="badge bg-primary-subtle text-primary border border-primary">Volunteer Profile</span>
+                        {% else %}
+                          <span class="badge bg-warning-subtle text-dark border border-warning">Task Requirement</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-end">
+                        <form method="post" action="{{ url_for('delete_education', education_id=edu.id) }}" class="d-inline" onsubmit="return confirm('Delete this education type?');">
+                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete education type">
+                            <i class="bi bi-trash"></i> Delete
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center py-4 text-muted">No custom education types added yet.</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- TAB 2: SKILLS CATALOG -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div class="tab-pane fade" id="skills-panel" role="tabpanel">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white py-3">
+              <h5 class="card-title fw-bold mb-0"><i class="bi bi-plus-circle me-2"></i>Add New Skill</h5>
+            </div>
+            <div class="card-body p-4">
+              <form method="post" action="{{ url_for('manage_catalogs') }}">
+                <input type="hidden" name="catalog_type" value="skill">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Skill Name</label>
+                  <input type="text" class="form-control" name="name" placeholder="e.g. Web Development, First Aid, Cooking" required />
+                  <small class="text-muted">Will immediately be selectable for volunteers and task postings.</small>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                  <i class="bi bi-check-lg me-1"></i>Add Skill to Catalog
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+              <h5 class="fw-bold mb-0"><i class="bi bi-tools text-primary me-2"></i>Registered Skills Catalog</h5>
+              <span class="badge bg-primary fs-6">{{ skills|length }} Skills</span>
+            </div>
+            <div class="card-body p-4 pt-2">
+              <div class="d-flex flex-wrap gap-2">
+                {% for skill in skills %}
+                <div class="badge bg-light text-dark border p-2 d-flex align-items-center gap-2 fs-6">
+                  <span><i class="bi bi-check-circle-fill text-success me-1"></i>{{ skill.name }}</span>
+                  <form method="post" action="{{ url_for('delete_catalog_skill', skill_id=skill.id) }}" class="d-inline" onsubmit="return confirm('Remove skill {{ skill.name }}?');">
+                    <button type="submit" class="btn-close btn-close-xs" style="font-size:0.65rem;" aria-label="Remove skill"></button>
+                  </form>
+                </div>
+                {% else %}
+                <p class="text-muted">No skills in database catalog.</p>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- TAB 3: HOBBIES & INTERESTS CATALOG -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <div class="tab-pane fade" id="interests-panel" role="tabpanel">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-warning text-dark py-3">
+              <h5 class="card-title fw-bold mb-0"><i class="bi bi-plus-circle me-2"></i>Add New Hobby / Interest</h5>
+            </div>
+            <div class="card-body p-4">
+              <form method="post" action="{{ url_for('manage_catalogs') }}">
+                <input type="hidden" name="catalog_type" value="interest">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Hobby / Interest Category Name</label>
+                  <input type="text" class="form-control" name="name" placeholder="e.g. Wildlife Protection, Reading, Cycling" required />
+                  <small class="text-muted">Will immediately be selectable for volunteer interests and task categories.</small>
+                </div>
+                <button type="submit" class="btn btn-warning w-100 fw-semibold text-dark">
+                  <i class="bi bi-check-lg me-1"></i>Add Interest to Catalog
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+              <h5 class="fw-bold mb-0"><i class="bi bi-heart text-danger me-2"></i>Registered Hobbies & Interests Catalog</h5>
+              <span class="badge bg-warning text-dark fs-6">{{ interests|length }} Interests</span>
+            </div>
+            <div class="card-body p-4 pt-2">
+              <div class="d-flex flex-wrap gap-2">
+                {% for interest in interests %}
+                <div class="badge bg-light text-dark border p-2 d-flex align-items-center gap-2 fs-6">
+                  <span><i class="bi bi-heart-fill text-danger me-1"></i>{{ interest.name }}</span>
+                  <form method="post" action="{{ url_for('delete_catalog_interest', interest_id=interest.id) }}" class="d-inline" onsubmit="return confirm('Remove interest {{ interest.name }}?');">
+                    <button type="submit" class="btn-close btn-close-xs" style="font-size:0.65rem;" aria-label="Remove interest"></button>
+                  </form>
+                </div>
+                {% else %}
+                <p class="text-muted">No interests in database catalog.</p>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,5 +1,236 @@
-{% extends 'base.html' %}{% block content %}
-<section class="hero text-white"><div class="container py-5"><div class="row align-items-center g-4"><div class="col-lg-7"><p class="text-uppercase fw-semibold">Small actions, real change</p><h1 class="display-4 fw-bold">Your time can make a difference.</h1><p class="lead">Find community work, share your skills, and help your neighbours.</p><a class="btn btn-warning btn-lg me-2" href="{{url_for('register')}}">Become a volunteer</a><a class="btn btn-outline-light btn-lg" href="{{url_for('tasks')}}">See tasks</a></div><div class="col-lg-5"><img class="img-fluid rounded-4 shadow" src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=900&q=80" alt="People volunteering together"></div></div></div></section>
-<section class="container py-5"><div class="text-center mb-4"><h2 class="fw-bold">How it works</h2><p class="text-muted">Simple enough for everyone.</p></div><div class="row g-4"><div class="col-md-4"><div class="card h-100 border-0 shadow-sm text-center p-3"><b class="step">1</b><h4>Make a profile</h4><p class="text-muted">Add skills, interests, time, and location.</p></div></div><div class="col-md-4"><div class="card h-100 border-0 shadow-sm text-center p-3"><b class="step">2</b><h4>Find a task</h4><p class="text-muted">Browse community opportunities.</p></div></div><div class="col-md-4"><div class="card h-100 border-0 shadow-sm text-center p-3"><b class="step">3</b><h4>Apply</h4><p class="text-muted">Get your automatic matching result.</p></div></div></div></section>
-<section class="bg-light py-5"><div class="container"><div class="d-flex justify-content-between align-items-center mb-4"><div><h2 class="fw-bold mb-0">Volunteer opportunities</h2><p class="text-muted mb-0">New work slides in automatically.</p></div><a class="btn btn-success" href="{{url_for('tasks')}}">View all</a></div><div id="opportunityCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500"><div class="carousel-inner">{% for task in tasks %}<div class="carousel-item {% if loop.first %}active{% endif %}"><div class="card opportunity-card border-0 shadow-sm overflow-hidden"><div class="row g-0"><div class="col-md-5"><img class="opportunity-image" src="{{url_for('static',filename=task.image_filename or 'images/tasks/cleanup.svg')}}" alt="{{task.title}}"></div><div class="col-md-7"><div class="card-body p-4"><span class="badge text-bg-success">{{task.location}}</span><h3 class="mt-3">{{task.title}}</h3><p class="text-muted">{{task.description}}</p><p class="mb-2"><b>Skills:</b> {{task.required_skills}}</p><p class="small text-muted"><b>Days:</b> {{task.availability}}</p><a class="btn btn-outline-success" href="{{url_for('tasks')}}">See this work</a></div></div></div></div></div>{% endfor %}</div><button class="carousel-control-prev carousel-dark" type="button" data-bs-target="#opportunityCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span><span class="visually-hidden">Previous</span></button><button class="carousel-control-next carousel-dark" type="button" data-bs-target="#opportunityCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span><span class="visually-hidden">Next</span></button></div></div></section>
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero text-white position-relative overflow-hidden py-5">
+  <div class="container py-3">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <span class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill mb-3 fw-bold shadow-xs">
+          <i class="bi bi-heart-fill me-1 text-danger"></i>Small Actions, Real Change
+        </span>
+        <h1 class="display-4 fw-bold text-white mb-3">Your time can make a real difference.</h1>
+        <p class="lead text-white-50 mb-4 fs-5">
+          Join Nepal's premier community volunteering system. Connect with registered NGOs, government organizations, Red Cross units, and local community groups.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a class="btn btn-warning btn-lg px-4 py-3 fw-bold shadow-sm" href="{{ url_for('register') }}">
+            <i class="bi bi-person-plus-fill me-1"></i>Become a volunteer
+          </a>
+          <a class="btn btn-outline-light btn-lg px-4 py-3 fw-bold" href="{{ url_for('tasks') }}">
+            <i class="bi bi-search me-1"></i>See tasks
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div id="heroCarousel" class="carousel slide carousel-fade shadow-lg rounded-4 overflow-hidden border border-2 border-white border-opacity-25" data-bs-ride="carousel" data-bs-interval="3500">
+          <div class="carousel-indicators">
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="5" aria-label="Slide 6"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="6" aria-label="Slide 7"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="7" aria-label="Slide 8"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="8" aria-label="Slide 9"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="9" aria-label="Slide 10"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="10" aria-label="Slide 11"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="11" aria-label="Slide 12"></button>
+          </div>
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=1200&q=80" alt="Community Action & Teamwork" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-people-fill me-1 text-warning"></i>1. Community Action & Teamwork</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1200&q=80" alt="Food Relief Support" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-box2-heart-fill me-1 text-warning"></i>2. Food Support & Relief Drives</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=80" alt="Tree Planting Initiative" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-tree-fill me-1 text-warning"></i>3. Environmental & Tree Planting</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=1200&q=80" alt="Youth Education & Care" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-book-fill me-1 text-warning"></i>4. Teaching & Tutoring Programs</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1581579438747-1dc8d1e292c7?auto=format&fit=crop&w=1200&q=80" alt="Elderly Care & Support" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-heart-pulse-fill me-1 text-warning"></i>5. Elderly Care & Wellness</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=1200&q=80" alt="Animal Shelter Companion Care" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-github me-1 text-warning"></i>6. Animal Shelter & Rescue Care</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80" alt="Emergency Relief & Red Cross" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-crosshair2 me-1 text-warning"></i>7. Disaster & Red Cross Emergency Support</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80" alt="Digital Literacy Training" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-laptop-fill me-1 text-warning"></i>8. Digital Literacy & Skill Training</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=1200&q=80" alt="Riverbank & Park Cleanup" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-trash-fill me-1 text-warning"></i>9. Riverbank & Public Park Cleanup</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1526976668912-1a811878dd37?auto=format&fit=crop&w=1200&q=80" alt="Youth Sports & Empowerment" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-trophy-fill me-1 text-warning"></i>10. Youth Sports & Empowerment</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80" alt="Cultural Heritage Preservation" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-bank me-1 text-warning"></i>11. Cultural Heritage Preservation</h6>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <img class="d-block w-100 hero-carousel-img" src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80" alt="Health & Medical Checkup Camps" />
+              <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-60 rounded-3 p-2 mb-2">
+                <h6 class="fw-bold mb-0 text-white"><i class="bi bi-hospital-fill me-1 text-warning"></i>12. Health & Medical Volunteer Camps</h6>
+              </div>
+            </div>
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="container py-5">
+  <div class="text-center mb-4">
+    <h2 class="fw-bold">How it works</h2>
+    <p class="text-muted">Simple enough for everyone.</p>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm text-center p-3">
+        <b class="step">1</b>
+        <h4>Make a profile</h4>
+        <p class="text-muted">Add skills, interests, time, and location.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm text-center p-3">
+        <b class="step">2</b>
+        <h4>Find a task</h4>
+        <p class="text-muted">Browse community opportunities.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm text-center p-3">
+        <b class="step">3</b>
+        <h4>Apply</h4>
+        <p class="text-muted">Get your automatic matching result.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="bg-light py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="fw-bold mb-0">Volunteer opportunities</h2>
+        <p class="text-muted mb-0">New work slides in automatically.</p>
+      </div>
+      <a class="btn btn-success" href="{{ url_for('tasks') }}">View all</a>
+    </div>
+    <div
+      id="opportunityCarousel"
+      class="carousel slide"
+      data-bs-ride="carousel"
+      data-bs-interval="4000"
+    >
+      <div class="carousel-inner">
+        {% for task in tasks %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+          <div class="card opportunity-card border-0 shadow-sm overflow-hidden">
+            <div class="row g-0">
+              <div class="col-md-5">
+                <img
+                  class="opportunity-image"
+                  src="{{ url_for('static', filename=task.image_filename or 'images/tasks/cleanup.svg') }}"
+                  alt="{{ task.title }}"
+                />
+              </div>
+              <div class="col-md-7">
+                <div class="card-body p-4">
+                  <div class="mb-2">
+                    <span class="badge text-bg-success">{{ task.location }}</span>
+                    <span class="badge bg-light text-dark border ms-1">
+                      <i class="bi bi-building me-1 text-success"></i>Posted by: <b>{{ task.organization_name }}</b>
+                    </span>
+                  </div>
+                  <h3 class="mt-2">{{ task.title }}</h3>
+                  <p class="text-muted">{{ task.description }}</p>
+                  <p class="mb-2"><b>Skills:</b> {{ task.required_skills }}</p>
+                  <p class="mb-2">
+                    <b>Education Required:</b>
+                    <span class="badge bg-light text-dark border">{{ task.min_education or 'No Formal Education Required' }}</span>
+                  </p>
+                  <p class="small text-muted">
+                    <b>Days:</b> {{ task.availability }}
+                  </p>
+                  <a class="btn btn-outline-success" href="{{ url_for('tasks') }}">See this work</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="carousel-item active">
+          <div class="card opportunity-card border-0 shadow-sm">
+            <div class="card-body p-4 text-center text-muted">No volunteer work has been posted yet.</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button
+        class="carousel-control-prev carousel-dark"
+        type="button"
+        data-bs-target="#opportunityCarousel"
+        data-bs-slide="prev"
+      >
+        <span class="carousel-control-prev-icon"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button
+        class="carousel-control-next carousel-dark"
+        type="button"
+        data-bs-target="#opportunityCarousel"
+        data-bs-slide="next"
+      >
+        <span class="carousel-control-next-icon"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+  </div>
+</section>
 {% endblock %}

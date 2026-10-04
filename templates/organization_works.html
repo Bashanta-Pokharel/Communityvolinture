@@ -1,1 +1,43 @@
-{% extends 'base.html' %}{% block content %}<div class="container py-5"><span class="eyebrow">Organization work list</span><h1 class="fw-bold">{{organization.organization_name or organization.name}}</h1><p class="text-muted">All volunteer work posted by this organization.</p><div class="row g-4">{% for work in works %}<div class="col-md-6 col-lg-4"><div class="card h-100 border-0 shadow-sm overflow-hidden"><img class="task-image" src="{{url_for('static',filename=work.image_filename or 'images/tasks/cleanup.svg')}}" alt="{{work.title}}"><div class="card-body"><span class="badge text-bg-success">{{work.location}}</span><h2 class="h5 mt-3">{{work.title}}</h2><p class="text-muted">{{work.description}}</p><p class="small mb-0"><b>Required skills:</b> {{work.required_skills}}<br><b>Days:</b> {{work.availability}}<br><b>Work dates:</b> {{work.start_date or 'Not set'}} to {{work.end_date or 'Not set'}}</p></div></div></div>{% else %}<div class="col"><div class="alert alert-info">This organization has not posted any work yet.</div></div>{% endfor %}</div><a class="btn btn-outline-success mt-4" href="{{url_for('manage_organizations')}}">Back to organizations</a></div>{% endblock %}
+{% extends 'base.html' %}{% block content %}
+<div class="container py-5">
+  <span class="eyebrow">Organization work list</span>
+  <h1 class="fw-bold">
+    {{organization.organization_name or organization.name}}
+  </h1>
+  <p class="text-muted">All volunteer work posted by this organization.</p>
+  <div class="row g-4">
+    {% for work in works %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 border-0 shadow-sm overflow-hidden">
+        <img
+          class="task-image"
+          src="{{url_for('static',filename=work.image_filename or 'images/tasks/cleanup.svg')}}"
+          alt="{{work.title}}"
+        />
+        <div class="card-body">
+          <span class="badge text-bg-success">{{work.location}}</span>
+          <h2 class="h5 mt-3">{{work.title}}</h2>
+          <p class="text-muted">{{work.description}}</p>
+          <p class="small mb-0">
+            <b>Required skills:</b> {{work.required_skills}}<br /><b>Days:</b>
+            {{work.availability}}<br /><b>Work dates:</b> {{work.start_date or
+            'Not set'}} to {{work.end_date or 'Not set'}}
+          </p>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col">
+      <div class="alert alert-info">
+        This organization has not posted any work yet.
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <a
+    class="btn btn-outline-success mt-4"
+    href="{{url_for('manage_organizations')}}"
+    >Back to organizations</a
+  >
+</div>
+{% endblock %}

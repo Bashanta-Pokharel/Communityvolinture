@@ -1,1 +1,78 @@
-{% extends 'base.html' %}{% block content %}{% set days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] %}<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-8"><span class="eyebrow">Update work details</span><h1 class="fw-bold">Edit task</h1><div class="card border-0 shadow-sm"><div class="card-body p-4"><form method="post"><label class="form-label">Task title</label><input class="form-control mb-3" name="title" value="{{task.title}}" required><label class="form-label">Description</label><textarea class="form-control mb-3" name="description" required>{{task.description}}</textarea><div class="row"><div class="col-md-6"><label class="form-label">Start date</label><input class="form-control mb-3" type="date" name="start_date" value="{{task.start_date or ''}}" required></div><div class="col-md-6"><label class="form-label">End date</label><input class="form-control mb-3" type="date" name="end_date" value="{{task.end_date or ''}}" required></div></div><label class="form-label">Required skills</label><input class="form-control mb-3" name="required_skills" value="{{task.required_skills}}" required><label class="form-label">Task interests</label><input class="form-control mb-3" name="interests" value="{{task.interests}}"><label class="form-label">Days needed</label><div class="check-grid mb-3">{% for day in days %}<div class="form-check"><input class="form-check-input" type="checkbox" name="availability" value="{{day}}" id="day{{loop.index}}" {% if day|lower in task.availability|lower %}checked{% endif %}><label class="form-check-label" for="day{{loop.index}}">{{day}}</label></div>{% endfor %}</div><label class="form-label">District only</label><input class="form-control mb-3" name="location" value="{{task.location}}" placeholder="District only, e.g. Kathmandu" required><button class="btn btn-success">Save task</button></form></div></div></div></div></div>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+{% set days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <span class="eyebrow">Update work details</span>
+      <h1 class="fw-bold">Edit task</h1>
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data">
+            <label class="form-label fw-semibold">Task title</label>
+            <input class="form-control mb-3" name="title" value="{{ task.title }}" required />
+
+            <label class="form-label fw-semibold">Task Image</label>
+            {% if task.image_filename %}
+            <div class="mb-2">
+              <img src="{{ url_for('static', filename=task.image_filename) }}" alt="Task Image" class="rounded shadow-sm" style="max-height: 140px; object-fit: cover;">
+              <small class="d-block text-muted mt-1">Current image: {{ task.image_filename }}</small>
+            </div>
+            {% endif %}
+            <input class="form-control mb-3" type="file" name="task_image" accept="image/*" />
+            <small class="text-muted d-block mb-3">Upload a new image to replace the current task image.</small>
+
+            <label class="form-label fw-semibold">Description</label>
+            <textarea class="form-control mb-3" name="description" rows="3" required>{{ task.description }}</textarea>
+
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Start date</label>
+                <input class="form-control mb-3" type="date" name="start_date" value="{{ task.start_date or '' }}" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">End date</label>
+                <input class="form-control mb-3" type="date" name="end_date" value="{{ task.end_date or '' }}" required />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Minimum Education Needed</label>
+              <select class="form-select" name="min_education" required>
+                {% for opt in TASK_MIN_EDUCATION_OPTIONS %}
+                  <option value="{{ opt }}" {% if task and task.min_education == opt %}selected{% endif %}>{{ opt }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <label class="form-label fw-semibold">Required skills</label>
+            <input class="form-control mb-3" name="required_skills" value="{{ task.required_skills }}" required />
+
+            <label class="form-label fw-semibold">Task interests</label>
+            <input class="form-control mb-3" name="interests" value="{{ task.interests }}" />
+
+            <label class="form-label fw-semibold">Days needed</label>
+            <div class="check-grid mb-3">
+              {% for day in days %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="availability" value="{{ day }}" id="day{{ loop.index }}"
+                  {% if day|lower in task.availability|lower %}checked{% endif %} />
+                <label class="form-check-label" for="day{{ loop.index }}">{{ day }}</label>
+              </div>
+              {% endfor %}
+            </div>
+
+            <label class="form-label fw-semibold">District only</label>
+            <input class="form-control mb-3" name="location" value="{{ task.location }}" placeholder="District only, e.g. Kathmandu" required />
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-success"><i class="bi bi-check-circle me-1"></i>Save task changes</button>
+              <a class="btn btn-outline-secondary" href="{{ url_for('manage_tasks') }}">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

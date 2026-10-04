@@ -1,1 +1,122 @@
-{% extends 'base.html' %}{% block content %}<section class="page-heading"><div class="container py-5 text-center"><span class="eyebrow">Find your place</span><h1 class="fw-bold">Community opportunities</h1><p class="lead mb-0">See required skills, free days, and work dates before applying.</p></div></section><div class="container pb-5"><div class="row g-4">{% for task, match in task_matches %}<div class="col-md-6 col-lg-4"><div class="card task-card h-100 border-0 shadow-sm overflow-hidden"><img class="task-image" src="{{url_for('static',filename=task.image_filename or 'images/tasks/cleanup.svg')}}" alt="{{task.title}}"><div class="card-body"><div class="d-flex justify-content-between gap-2"><span class="badge text-bg-success">{{task.location}}</span><span class="small text-muted">{{task.availability}}</span></div><h3 class="h4 mt-3">{{task.title}}</h3><p class="text-muted">{{task.description}}</p><p class="small text-muted"><b>Work dates:</b> {{task.start_date or 'To be announced'}} to {{task.end_date or 'To be announced'}}</p><div class="requirement-box"><small class="d-block"><b>Required skills</b><br>{{task.required_skills}}</small></div>{% if match %}<div class="match-box mt-3"><small class="d-block"><b>Jaccard requirement match:</b> {{'%.0f'|format(match.score*100)}}%</small><small class="d-block"><b>Your matched skills:</b> {{match.common_skills|join(', ') or 'None yet'}}</small><small class="d-block"><b>Matching free days:</b> {{match.common_days|join(', ') or 'No matching day'}}</small><span class="badge mt-2 text-bg-{{'success' if match.qualified else 'secondary'}}">{{'Ready to qualify' if match.qualified else 'Complete matching skills / days'}}</span></div>{% endif %}</div><div class="card-footer bg-white border-0 pb-3">{% if session.get('role')=='volunteer' %}<form method="post" action="{{url_for('apply',task_id=task.id)}}"><button class="btn btn-success w-100">Apply with my profile</button></form>{% elif not session.get('user_id') %}<a class="btn btn-outline-success w-100" href="{{url_for('login')}}">Log in to apply</a>{% endif %}</div></div></div>{% else %}<div class="col"><div class="alert alert-info">No volunteer opportunities are available yet.</div></div>{% endfor %}</div></div>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-heading">
+  <div class="container py-5 text-center">
+    <span class="eyebrow">Find your place</span>
+    <h1 class="fw-bold">Community Opportunities</h1>
+    <p class="lead mb-0">
+      Volunteer opportunities matching your skills via Jaccard Similarity (Minimum 40% Match Required).
+    </p>
+  </div>
+</section>
+
+<div class="container pb-5">
+  <div class="row g-4">
+    {% for task, match in task_matches %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card task-card h-100 border-0 shadow-sm overflow-hidden d-flex flex-column">
+        <img
+          class="task-image"
+          src="{{ url_for('static', filename=task.image_filename or 'images/tasks/cleanup.svg') }}"
+          alt="{{ task.title }}"
+          style="height: 200px; object-fit: cover;"
+        />
+        <div class="card-body flex-grow-1">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+            <span class="badge bg-success"><i class="bi bi-geo-alt me-1"></i>{{ task.location }}</span>
+            <span class="small text-muted"><i class="bi bi-calendar-week me-1"></i>{{ task.availability }}</span>
+          </div>
+          
+          <div class="mb-2">
+            <span class="badge bg-light text-dark border"><i class="bi bi-building me-1 text-success"></i>Posted by: <b>{{ task.organization_name }}</b></span>
+          </div>
+
+          <h3 class="h5 fw-bold mt-2 mb-2">{{ task.title }}</h3>
+          <p class="text-muted small mb-3">{{ task.description }}</p>
+          
+          <div class="small text-muted mb-3">
+            <i class="bi bi-clock me-1"></i><b>Dates:</b> {{ task.start_date or 'TBA' }} to {{ task.end_date or 'TBA' }}
+          </div>
+          
+          <div class="requirement-box p-3 bg-light rounded mb-3">
+            <small class="d-block text-dark mb-2">
+              <b><i class="bi bi-tools me-1 text-success"></i>Required skills:</b><br />
+              <span class="text-secondary">{{ task.required_skills }}</span>
+            </small>
+            <small class="d-block text-dark">
+              <b><i class="bi bi-mortarboard me-1 text-primary"></i>Min Education Required:</b><br />
+              <span class="badge bg-light text-dark border">{{ task.min_education or 'No Formal Education Required' }}</span>
+            </small>
+          </div>
+
+          {% if match %}
+          <div class="match-box p-3 rounded border {% if match.qualified %}border-success bg-success-subtle{% else %}border-warning bg-warning-subtle{% endif %}">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small fw-bold">Jaccard Skill Match:</span>
+              <span class="badge fs-6 {% if match.qualified %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                {{ '%.2f'|format(match.score * 100) }}%
+              </span>
+            </div>
+
+            <small class="d-block text-dark mb-1">
+              <b>Matched skills:</b> {{ match.common_skills|join(', ') or 'None yet' }}
+            </small>
+            <small class="d-block text-dark mb-1">
+              <b>Matching days:</b> {{ match.common_days|join(', ') or 'No matching day' }}
+            </small>
+            <small class="d-block text-dark mb-2">
+              <b>Education Check:</b> 
+              {% if match.edu_qualified %}
+                <span class="badge bg-success"><i class="bi bi-check me-1"></i>Meets Required Level</span>
+              {% else %}
+                <span class="badge bg-danger"><i class="bi bi-x me-1"></i>Below {{ task.min_education }}</span>
+              {% endif %}
+            </small>
+
+            {% if match.all_skills_match and match.qualified %}
+              <span class="badge bg-success w-100 py-2"><i class="bi bi-check-circle-fill me-1"></i>All Required Skills & Education Matched</span>
+            {% elif match.qualified %}
+              <span class="badge bg-success w-100 py-2"><i class="bi bi-check-circle-fill me-1"></i>Qualified (Skills & Education Passed)</span>
+            {% elif not match.edu_qualified %}
+              <span class="badge bg-danger w-100 py-2"><i class="bi bi-mortarboard-fill me-1"></i>Not Qualified (Requires {{ task.min_education }})</span>
+            {% else %}
+              <span class="badge bg-danger w-100 py-2"><i class="bi bi-x-circle-fill me-1"></i>Not Qualified (Requires >= 40% Match)</span>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="card-footer bg-white border-0 pb-3 pt-0">
+          {% if session.get('role') == 'volunteer' %}
+            {% if match and match.qualified %}
+              <form method="post" action="{{ url_for('apply', task_id=task.id) }}">
+                <button class="btn btn-success w-100 fw-semibold">
+                  <i class="bi bi-send me-1"></i>Apply for Work
+                </button>
+              </form>
+            {% else %}
+              <button class="btn btn-secondary w-100" disabled title="Minimum 40% Jaccard match required to apply">
+                <i class="bi bi-lock me-1"></i>Cannot Apply (Requires >= 40% Match)
+              </button>
+              <small class="text-muted d-block text-center mt-1" style="font-size: 0.78rem;">
+                Add more matching skills in <a href="{{ url_for('profile') }}">Profile</a> to reach 40%
+              </small>
+            {% endif %}
+          {% elif not session.get('user_id') %}
+            <a class="btn btn-outline-success w-100" href="{{ url_for('login') }}">
+              <i class="bi bi-box-arrow-in-right me-1"></i>Log in to apply
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col">
+      <div class="alert alert-info">
+        No volunteer opportunities are available yet.
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

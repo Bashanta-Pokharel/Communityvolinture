@@ -1,1 +1,86 @@
-{% extends 'base.html' %}{% block content %}<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-8"><div class="card border-0 shadow"><div class="card-body p-4 p-md-5"><h1 class="h2 fw-bold">Create an organization account</h1><p class="text-muted">Organizations post and manage their own volunteer opportunities.</p><form method="post"><div class="row"><div class="col-md-6"><label class="form-label">Organization name</label><input class="form-control mb-3" name="organization_name" required></div><div class="col-md-6"><label class="form-label">Contact person</label><input class="form-control mb-3" name="contact_person" required></div></div><div class="row"><div class="col-md-6"><label class="form-label">Email</label><input class="form-control mb-3" type="email" name="email" required></div><div class="col-md-6"><label class="form-label">Phone</label><input class="form-control mb-3" name="phone"></div></div><label class="form-label">Password</label><input class="form-control mb-3" type="password" name="password" minlength="6" required><label class="form-label">Location</label><input class="form-control mb-3" name="location" required><label class="form-label">About the organization</label><textarea class="form-control mb-4" name="description" rows="3"></textarea><button class="btn btn-success w-100">Create organization account</button></form><p class="text-center mt-4 mb-0">Already have an account? <a href="{{url_for('login')}}">Log in</a></p></div></div></div></div></div>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="h2 fw-bold mb-1">Create an organization account</h1>
+          <p class="text-muted mb-4">
+            Register your Government Organization, NGO, Red Cross unit, or Community Group to post and manage volunteer opportunities.
+          </p>
+
+          <form method="post" enctype="multipart/form-data">
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label fw-bold" for="organizationName">Organization name</label>
+                <input class="form-control mb-3" id="organizationName" name="organization_name" placeholder="e.g. Nepal Red Cross Society" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold" for="organizationType">Organization Type / Classification</label>
+                <select class="form-select mb-3" id="organizationType" name="organization_type" required>
+                  {% for opt in ORGANIZATION_TYPE_OPTIONS %}
+                    <option value="{{ opt }}" {% if opt == 'Non-Governmental Organization (NGO)' %}selected{% endif %}>{{ opt }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label fw-bold" for="contactPerson">Contact person name</label>
+                <input class="form-control mb-3" id="contactPerson" name="contact_person" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold" for="username">Username</label>
+                <input class="form-control mb-1" id="username" name="username" minlength="3" maxlength="30" pattern="[A-Za-z0-9_]+" required />
+                <small class="text-muted d-block mb-3">Letters, numbers, or underscores only.</small>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label fw-bold" for="email">Email address</label>
+                <input class="form-control mb-3" id="email" type="email" name="email" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold" for="phone">Phone number</label>
+                <input class="form-control mb-3" id="phone" name="phone" placeholder="e.g. 9800000000" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label fw-bold" for="password">Password</label>
+                <input class="form-control mb-3" id="password" type="password" name="password" minlength="6" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold" for="confirmPassword">Confirm password</label>
+                <input class="form-control mb-3" id="confirmPassword" type="password" name="confirm_password" minlength="6" required />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold" for="logo">Organization Logo / Emblem Image</label>
+              <input class="form-control" id="logo" type="file" name="logo" accept="image/png,image/jpeg,image/gif,image/webp" />
+              <small class="text-muted d-block mt-1">Optional: Upload your official logo or emblem (PNG, JPG, WEBP).</small>
+            </div>
+
+            <label class="form-label fw-bold" for="location">Full Address & Location</label>
+            <input class="form-control mb-3" id="location" name="location" placeholder="Full address (e.g. Lazimpat-2, Kathmandu, Bagmati)" required />
+
+            <label class="form-label fw-bold" for="description">About the Organization & Company Details</label>
+            <textarea class="form-control mb-4" id="description" name="description" rows="3" placeholder="Write a short summary about your organization's mission and community works..."></textarea>
+
+            <button type="submit" class="btn btn-success w-100 py-2 fw-semibold"><i class="bi bi-building-add me-1"></i>Create Organization Account</button>
+          </form>
+
+          <p class="text-center mt-4 mb-0 text-muted">
+            Already registered? <a href="{{ url_for('login') }}" class="text-success fw-bold">Log in here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
