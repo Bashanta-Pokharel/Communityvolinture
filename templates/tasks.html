@@ -5,7 +5,7 @@
     <span class="eyebrow">Find your place</span>
     <h1 class="fw-bold">Community Opportunities</h1>
     <p class="lead mb-0">
-      Volunteer opportunities matching your skills via Jaccard Similarity (Minimum 40% Match Required).
+      Volunteer opportunities matching your skills via Jaccard Similarity (More than 30% match required).
     </p>
   </div>
 </section>
@@ -80,7 +80,7 @@
             {% elif not match.edu_qualified %}
               <span class="badge bg-danger w-100 py-2"><i class="bi bi-mortarboard-fill me-1"></i>Not Qualified (Requires {{ task.min_education }})</span>
             {% else %}
-              <span class="badge bg-danger w-100 py-2"><i class="bi bi-x-circle-fill me-1"></i>Not Qualified (Requires >= 40% Match)</span>
+              <span class="badge bg-danger w-100 py-2"><i class="bi bi-x-circle-fill me-1"></i>Not Qualified (Requires more than 30% match)</span>
             {% endif %}
           </div>
           {% endif %}
@@ -95,11 +95,11 @@
                 </button>
               </form>
             {% else %}
-              <button class="btn btn-secondary w-100" disabled title="Minimum 40% Jaccard match required to apply">
-                <i class="bi bi-lock me-1"></i>Cannot Apply (Requires >= 40% Match)
+              <button class="btn btn-secondary w-100" disabled title="More than 30% Jaccard match required to apply">
+                <i class="bi bi-lock me-1"></i>Cannot Apply (Requires more than 30%)
               </button>
               <small class="text-muted d-block text-center mt-1" style="font-size: 0.78rem;">
-                Add more matching skills in <a href="{{ url_for('profile') }}">Profile</a> to reach 40%
+                Add more matching skills in <a href="{{ url_for('profile') }}">Profile</a> to reach more than 30%
               </small>
             {% endif %}
           {% elif not session.get('user_id') %}

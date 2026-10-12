@@ -1,60 +1,112 @@
 # Community Volunteer System
 
-A simple Flask project where volunteers apply for work, organizations post work, and an admin manages both.
+A Flask web app where volunteers apply for tasks, organizations post tasks, and an admin manages everything.
 
-## Run the project
+---
 
-1. Start **MySQL** in XAMPP.
-2. Open this project folder in the terminal.
-3. Run these commands:
+## Setting up on a new machine (migration / first run)
+
+### Step 1 — Requirements
+- **Python 3.10+**
+- **XAMPP** with MySQL started
+
+### Step 2 — Clone / copy the project folder, then open a terminal inside it
+
+### Step 3 — Create a virtual environment and install packages
 
 ```bash
-source venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate          # Mac / Linux
+# venv\Scripts\activate           # Windows
+
 pip install -r requirements.txt
-python app.py
 ```
 
-4. Open `http://127.0.0.1:5000` in the browser.
+### Step 4 — Start MySQL in XAMPP, then run the app
 
-The project creates the `community_volinturee` MySQL database automatically when XAMPP MySQL is running.
+```bash
+python3 app.py
+```
 
-## Demo login accounts
+That's it. The app **automatically**:
+- Creates the `community_volinturee` MySQL database
+- Creates all tables (from `schema.sql`)
+- Seeds the skill, interest, and education catalogs
+- Creates the default admin account
 
-| Role | Username / email | Password |
-|---|---|---|
-| Admin | `admin` or `admin@gmail.com` | `admin123` |
-| Volunteer | `bashanta27` or `bashanta@gmail.com` | `Bashanta123` |
-| Volunteer | `sweekriti42` or `sweekriti@gmail.com` | `Bashanta123` |
-| Volunteer | `kusum65` or `kusum@gmail.com` | `Bashanta123` |
-| Volunteer | `aagaman18` or `aagaman@gmail.com` | `Bashanta123` |
-| Volunteer | `bhuban83` or `bhuban@gmail.com` | `Bashanta123` |
+Open `http://127.0.0.1:5000` in your browser.
 
-These are classroom demo accounts. Passwords are stored as hashes in the MySQL database.
+---
 
-## Main files
+## If you only want to initialize the database (without starting the server)
 
-| File | Simple purpose |
-|---|---|
-| `app.py` | Flask routes, login, and MySQL connection |
-| `schema.sql` | MySQL tables |
-| `services/matching.py` | Jaccard similarity calculation |
-| `templates/` | HTML pages |
-| `static/css/style.css` | Page colors and layout |
-| `static/js/script.js` | Browser actions and status indicator |
+```bash
+python3 setup.py
+```
+
+Then start the app separately:
+
+```bash
+python3 app.py
+```
+
+---
+
+## Default admin login
+
+| Field    | Value               |
+|----------|---------------------|
+| Email    | `admin@gmail.com`   |
+| Username | `admin`             |
+| Password | `admin123`          |
+
+> Change the password after first login.
+
+---
+
+## File structure
+
+```
+app.py                 ← All routes. Run this to start the system.
+setup.py               ← One-time DB setup (optional, app.py does this too)
+database.py            ← run(), commit(), init_db()
+helpers.py             ← require, save_image, owns, nav, match helpers
+services/
+  matching.py          ← Jaccard similarity algorithm
+  education.py         ← Education levels + match_details
+schema.sql             ← MySQL table definitions
+requirements.txt       ← Python packages
+templates/             ← HTML pages
+static/                ← CSS, JS, images, uploads
+```
+
+---
+
+## How the app initializes itself (for developers)
+
+When you run `python3 app.py`, at the bottom of the file this runs:
+
+```python
+with app.app_context():
+    init_db()          # ← in database.py
+```
+
+`init_db()` does these steps in order:
+
+1. **Creates the database** — `CREATE DATABASE IF NOT EXISTS community_volinturee`
+2. **Creates tables** — runs every statement in `schema.sql`
+3. **Safe migrations** — adds any missing columns for older databases
+4. **Seeds catalogs** — inserts default skills, interests, and education levels
+5. **Admin account** — creates `admin@gmail.com` if it doesn't exist yet
+
+Everything uses `IF NOT EXISTS` or `ON DUPLICATE KEY UPDATE`, so it is **safe to run multiple times** — it will never overwrite existing data.
+
+---
 
 ## Jaccard similarity
 
-The project uses one matching algorithm:
-
 `J(A, B) = |A ∩ B| / |A ∪ B|`
 
-- `A` is the volunteer’s skills.
-- `B` is the work’s required skills.
-- `A ∩ B` means the skills both have.
-- `A ∪ B` means every different skill from both lists.
-
-Example: volunteer has `Teaching, First Aid`; a task needs `Teaching, Communication`.
-
-Common skills = 1 (`Teaching`). All different skills = 3. The result is `1 / 3 = 33%`.
-
-The Bashanta demo profile has 9 skills. Four demo works deliberately require 5, 6, 7, and 8 of those skills, so they show `55.56%`, `66.67%`, `77.78%`, and `88.89%` Jaccard similarity.
+- **A** = volunteer's skills
+- **B** = task's required skills
+- A volunteer must score **> 30%**, share at least **one available day**, and meet the **education level** to qualify.
